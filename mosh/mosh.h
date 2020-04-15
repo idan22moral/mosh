@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "parser_utils.h"
 
 #define _STR(x) #x
 #define STR(x) _STR(x)
@@ -14,7 +15,6 @@
 
 void print_prompt();
 char* get_input();
-char** split_string(char* s, const char* sep);
-char** split_into_commands(char* buffer);
 int mosh_interactive();
+
 #endif //MOSH_H

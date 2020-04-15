@@ -13,29 +13,6 @@ char* get_input()
 	return input_buffer;
 }
 
-char **split_string(char *s, const char *sep)
-{
-	int token_count = 1;
-	char *ptr = NULL;
-	char **tokens = (char **)malloc(sizeof(char**));
-
-	tokens[0] = strtok(s, sep);
-
-	while ((ptr = strtok(NULL, sep)))
-	{
-		tokens[token_count] = ptr;
-		tokens = (char **)realloc(tokens, ++token_count * sizeof(char**));
-	}
-	tokens[token_count] = NULL;
-
-	return tokens;
-}
-
-char **split_into_commands(char* buffer)
-{
-	return split_string(buffer, ";");
-}
-
 int mosh_interactive()
 {
 	int i = 0;
@@ -43,16 +20,20 @@ int mosh_interactive()
 	char *input_ptr = NULL;
 	char **commands = NULL;
 
-	print_prompt();
-	input_ptr = get_input();
-	commands = split_into_commands(input_ptr);
-
-	if (commands == NULL)
-		return 1;
-
-	while ((cmd_ptr = commands[i++]) != NULL)
+	while (true)
 	{
-		puts(cmd_ptr);
+		print_prompt();
+		input_ptr = get_input();
+		commands = split_into_commands(input_ptr);
+
+		if (commands == NULL)
+			return 1;
+
+		while ((cmd_ptr = commands[i++]) != NULL)
+		{
+			puts(cmd_ptr);
+		}
 	}
+	
 	return 0;
 }
