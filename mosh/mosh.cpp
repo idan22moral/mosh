@@ -9,8 +9,7 @@ void print_prompt()
 
 char* get_input()
 {
-	fgets(input_buffer, ARG_MAX, stdin);
-	return input_buffer;
+	return fgets(input_buffer, ARG_MAX, stdin);
 }
 
 int mosh_interactive()
@@ -24,6 +23,10 @@ int mosh_interactive()
 	{
 		print_prompt();
 		input_ptr = get_input();
+		
+		if (feof(stdin))
+			return 1;
+
 		commands = split_into_commands(input_ptr);
 
 		if (commands == NULL)
@@ -35,6 +38,6 @@ int mosh_interactive()
 		}
 		i = 0;
 	}
-	
+
 	return 0;
 }
