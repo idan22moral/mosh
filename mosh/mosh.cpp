@@ -33,6 +33,7 @@ int mosh_interactive()
 		{
 			puts(cmd_ptr);
 		}
+		i = 0;
 	}
 	
 	return 0;
