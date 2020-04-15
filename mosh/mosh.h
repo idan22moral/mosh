@@ -16,5 +16,5 @@ void print_prompt();
 char* get_input();
 char** split_string(char* s, const char* sep);
 char** split_into_commands(char* buffer);
-void mosh_interactive();
+int mosh_interactive();
 #endif //MOSH_H

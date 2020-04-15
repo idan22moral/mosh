@@ -3,6 +3,5 @@
 
 int main()
 {
-    mosh_interactive();
-    return 0;
+    return mosh_interactive();
 }

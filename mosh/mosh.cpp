@@ -36,7 +36,7 @@ char **split_into_commands(char* buffer)
 	return split_string(buffer, ";");
 }
 
-void mosh_interactive()
+int mosh_interactive()
 {
 	int i = 0;
 	char *cmd_ptr = NULL;
@@ -52,6 +52,7 @@ void mosh_interactive()
 
 	while ((cmd_ptr = commands[i++]) != NULL)
 	{
-		std::cout << cmd_ptr << std::endl;
+		puts(cmd_ptr);
 	}
+	return 0;
 }
