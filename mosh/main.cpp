@@ -4,7 +4,7 @@
 int main()
 {
 	int result = 0;
-	
+
 	result = mosh_interactive();
 	puts("");
 

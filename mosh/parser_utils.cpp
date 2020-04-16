@@ -4,7 +4,7 @@ char **split_string(char *s, const char *sep)
 {
 	int token_count = 2;
 	char *ptr = NULL;
-	char **tokens = (char **)malloc(2*sizeof(char *));
+	char **tokens = (char **)malloc(2 * sizeof(char *));
 
 	tokens[0] = strtok(s, sep);
 

@@ -29,15 +29,17 @@ int mosh_interactive()
 
 		commands = split_into_commands(input_ptr);
 
+		// Make sure that there are commands to loop through
 		if (commands == NULL)
 			return 1;
 
+		// Loop through the recieved commands
 		while ((cmd_ptr = commands[i++]) != NULL)
 		{
 			puts(cmd_ptr);
 		}
+
 		i = 0;
-		
 		free_tokens(commands);
 		commands = NULL;
 	}
