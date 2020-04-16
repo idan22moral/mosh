@@ -1,31 +1,55 @@
 #include "parser_utils.h"
-
-char **split_string(char *s, const char *sep)
+#include <ctype.h>
+std::vector<std::string> tokenize(std::string s)
 {
-	int token_count = 2;
-	char *ptr = NULL;
-	char **tokens = (char **)malloc(2 * sizeof(char *));
+	int i, slen;
+	parse_mode mode = parse_mode::NORMAL;
+	std::vector<std::string> tokens;
+	std::stringstream current_token;
 
-	tokens[0] = strtok(s, sep);
-
-	while ((ptr = strtok(NULL, sep)))
+	slen = s.length();
+	for (i = 0; i < slen; i++)
 	{
-		tokens[token_count - 1] = ptr;
-		tokens = (char **)realloc(tokens, ++token_count * sizeof(char *));
+		switch (mode)
+		{
+		case parse_mode::NORMAL:
+			if (s[i] == '\'') // start of ' literal
+				mode = parse_mode::APOSTROPHE;
+			else if (s[i] == '\"') // start of " literal
+				mode = parse_mode::QUOTATION;
+			else if (s[i] == ' ' || s[i] == '\t' || ispunct(s[i])) // end of token
+			{
+				tokens.push_back(current_token.str());
+				current_token.str(std::string()); // clear the stream
+				tokens.push_back(std::string(1, s[i]));
+			}
+			else
+				current_token << s[i];
+			
+			break;
+
+		case parse_mode::APOSTROPHE:
+			if (s[i] == '\'') // end of ' literal
+				mode = parse_mode::NORMAL;
+			else
+				current_token << s[i];
+			break;
+
+		case parse_mode::QUOTATION:
+			if (s[i] == '\"') // end of " literal
+				mode = parse_mode::NORMAL;
+			// ********** Add string embedded special chars support here **********
+			else
+				current_token << s[i];
+			break;
+		
+		default:
+			break;
+		}
 	}
-	tokens[token_count - 1] = NULL;
+
+	if (!current_token.str().empty())
+		tokens.push_back(current_token.str());
 
 	return tokens;
-}
-
-char **split_into_commands(char *buffer)
-{
-	return split_string(buffer, ";");
-}
-
-void free_tokens(char **tokens)
-{
-	int i = 0;
-	if (tokens)
-		free(tokens);
 }

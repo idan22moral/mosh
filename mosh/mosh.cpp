@@ -7,41 +7,34 @@ void print_prompt()
 	fwrite("$ ", 1, 2, stdout);
 }
 
-char *get_input()
+std::string get_input()
 {
-	return fgets(input_buffer, ARG_MAX, stdin);
+	std::string line;
+	std::getline(std::cin, line, '\n');
+	return line;
 }
 
 int mosh_interactive()
 {
 	int i = 0;
-	char *cmd_ptr = NULL;
-	char *input_ptr = NULL;
-	char **commands = NULL;
+	std::string line;
+	std::vector<std::string> tokens;
 
 	while (true)
 	{
 		print_prompt();
-		input_ptr = get_input();
+		line = get_input();
 
-		if (feof(stdin))
+		if (std::cin.eof())
 			return 1;
 
-		commands = split_into_commands(input_ptr);
-
-		// Make sure that there are commands to loop through
-		if (commands == NULL)
-			return 1;
+		tokens = tokenize(line);
 
 		// Loop through the recieved commands
-		while ((cmd_ptr = commands[i++]) != NULL)
+		for (i = 0; i < tokens.size(); i++)
 		{
-			puts(cmd_ptr);
+			std::cout << "\'" << tokens[i] << "\'" << std::endl;
 		}
-
-		i = 0;
-		free_tokens(commands);
-		commands = NULL;
 	}
 
 	return 0;

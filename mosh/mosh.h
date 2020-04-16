@@ -13,7 +13,7 @@
 #define ARG_MAX_STR STR(ARG_MAX)
 
 void print_prompt();
-char *get_input();
+std::string get_input();
 int mosh_interactive();
 
 #endif //MOSH_H

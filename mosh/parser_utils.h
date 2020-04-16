@@ -3,9 +3,17 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
 
-char **split_string(char *s, const char *sep);
-char **split_into_commands(char *buffer);
-void free_tokens(char **tokens);
+enum class parse_mode {
+	NORMAL,
+	APOSTROPHE,	// '
+	QUOTATION	// "
+};
+
+std::vector<std::string> tokenize(std::string s);
 
 #endif //PARSER_UTILS_H
