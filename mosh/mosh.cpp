@@ -7,7 +7,7 @@ void print_prompt()
 	fwrite("$ ", 1, 2, stdout);
 }
 
-char* get_input()
+char *get_input()
 {
 	return fgets(input_buffer, ARG_MAX, stdin);
 }
@@ -23,7 +23,7 @@ int mosh_interactive()
 	{
 		print_prompt();
 		input_ptr = get_input();
-		
+
 		if (feof(stdin))
 			return 1;
 
@@ -37,6 +37,9 @@ int mosh_interactive()
 			puts(cmd_ptr);
 		}
 		i = 0;
+		
+		free_tokens(commands);
+		commands = NULL;
 	}
 
 	return 0;

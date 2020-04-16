@@ -3,10 +3,10 @@
 
 int main()
 {
-    int result = 0;
-    
-    result = mosh_interactive();
-    puts("");
+	int result = 0;
+	
+	result = mosh_interactive();
+	puts("");
 
-    return result;
+	return result;
 }
