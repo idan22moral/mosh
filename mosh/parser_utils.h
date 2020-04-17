@@ -14,6 +14,7 @@ enum class parse_mode {
 	QUOTATION	// "
 };
 
+bool is_operator(char ch);
 std::vector<std::string> tokenize(std::string s);
 
 #endif //PARSER_UTILS_H

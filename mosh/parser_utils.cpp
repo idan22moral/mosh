@@ -1,5 +1,12 @@
 #include "parser_utils.h"
 #include <ctype.h>
+
+bool is_operator(char ch)
+{
+	//std::string mosh_operators = ;
+	return strchr("|&$()><;", ch);
+}
+
 std::vector<std::string> tokenize(std::string s)
 {
 	int i, slen;
@@ -17,9 +24,10 @@ std::vector<std::string> tokenize(std::string s)
 				mode = parse_mode::APOSTROPHE;
 			else if (s[i] == '\"') // start of " literal
 				mode = parse_mode::QUOTATION;
-			else if (s[i] == ' ' || s[i] == '\t' || ispunct(s[i])) // end of token
+			else if (s[i] == ' ' || s[i] == '\t' || is_operator(s[i])) // end of token
 			{
-				tokens.push_back(current_token.str());
+				if (current_token.str() != "")
+					tokens.push_back(current_token.str());
 				current_token.str(std::string()); // clear the stream
 				tokens.push_back(std::string(1, s[i]));
 			}

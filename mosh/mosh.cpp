@@ -1,7 +1,5 @@
 #include "mosh.h"
 
-char input_buffer[ARG_MAX];
-
 void print_prompt()
 {
 	fwrite("$ ", 1, 2, stdout);
@@ -28,6 +26,7 @@ int mosh_interactive()
 		if (std::cin.eof())
 			return 1;
 
+		// Convert the raw input into tokens
 		tokens = tokenize(line);
 
 		// Loop through the recieved commands
