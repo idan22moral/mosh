@@ -28,12 +28,25 @@ int mosh_interactive()
 
 		// Convert the raw input into tokens
 		tokens = tokenize(line);
-
+		
+		std::cout << "[ ";
 		// Loop through the recieved commands
 		for (i = 0; i < tokens.size(); i++)
 		{
-			std::cout << "\'" << tokens[i] << "\'" << std::endl;
+			std::cout << "\'" << tokens[i] << "\', ";
 		}
+		std::cout << " ]" << std::endl;
+
+		auto result = label_tokens(tokens);
+
+		std::cout << "[ ";
+		// Loop through the recieved commands
+		for (i = 0; i < result.size(); i++)
+		{
+			std::cout << "(\'" << result[i].first << "\', " << (int)result[i].second << "), ";
+		}
+		std::cout << " ]" << std::endl;
+
 	}
 
 	return 0;
