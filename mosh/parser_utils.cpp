@@ -48,14 +48,14 @@ token_label label_token_by_operator(mosh_operator op)
 {
 	switch (op)
 	{
-		case mosh_operator::REDIRECT_LEFT:
-			return token_label::FILE;
-		case mosh_operator::ROUND_BRACKET_CLOSE:
-			return token_label::OPERATOR;
-		case mosh_operator::ROUND_BRACKET_OPEN:
-			return token_label::UNDEFINED;
-		default:
-			return token_label::COMMAND;
+	case mosh_operator::REDIRECT_LEFT:
+		return token_label::FILE;
+	case mosh_operator::ROUND_BRACKET_CLOSE:
+		return token_label::OPERATOR;
+	case mosh_operator::ROUND_BRACKET_OPEN:
+		return token_label::UNDEFINED;
+	default:
+		return token_label::COMMAND;
 	}
 }
 
