@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "parser_utils.h"
+#include "mosh_parser.h"
 
 #define _STR(x) #x
 #define STR(x) _STR(x)
