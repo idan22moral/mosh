@@ -10,12 +10,12 @@ mosh_operator label_operator(std::string op)
 		return mosh_operator::AND;
 	if (op == "||")
 		return mosh_operator::OR;
-	if (op == ">")
+	/*if (op == ">")
 		return mosh_operator::REDIRECT_LEFT;
 	if (op == "(")
 		return mosh_operator::ROUND_BRACKET_OPEN;
 	if (op == ")")
-		return mosh_operator::ROUND_BRACKET_CLOSE;
+		return mosh_operator::ROUND_BRACKET_CLOSE;*/
 	if (op == ";")
 		return mosh_operator::SEMICOLON;
 	return mosh_operator::INVALID;
@@ -25,12 +25,12 @@ token_label label_token_by_operator(mosh_operator op)
 {
 	switch (op)
 	{
-	case mosh_operator::REDIRECT_LEFT:
+	/*case mosh_operator::REDIRECT_LEFT:
 		return token_label::FILE;
 	case mosh_operator::ROUND_BRACKET_CLOSE:
 		return token_label::OPERATOR;
 	case mosh_operator::ROUND_BRACKET_OPEN:
-		return token_label::UNDEFINED;
+		return token_label::UNDEFINED;*/
 	default:
 		return token_label::COMMAND;
 	}
@@ -173,4 +173,148 @@ std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::s
 	}
 
 	return labeled_tokens;
+}
+
+std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, token_label>> labeled_tokens)
+{
+	std::vector<mosh_ast_node*> ast_list;
+	std::vector<std::string> args;
+	std::pair<std::string, token_label> current_token;
+	mosh_command* cmd;
+	mosh_pipe* pipe;
+	bool save_pipe = false, save_cmd = false;
+	int i, token_count = labeled_tokens.size(), last_redirect_index = -1;
+
+	for (i = 0; i < token_count; i++)
+	{
+		current_token = labeled_tokens[i];
+		
+		switch (current_token.second)
+		{
+		case token_label::ARGUMENT:
+		{
+			if (cmd)
+			{
+				cmd->add_argument(labeled_tokens[i].first);
+			}
+			else
+			{
+				puts("Command not allocated.");
+			}
+		}
+		break;
+
+		case token_label::COMMAND:
+		{
+			//cmd.set_command(labeled_tokens[i].first);
+			cmd = new mosh_command(labeled_tokens[i].first);
+			save_cmd = true;
+		}
+			
+		break;
+
+		/*case token_label::FILE:
+		{
+			if (i == 0 || last_redirect_index != i - 1)
+			{
+				perror("token parsed as file");
+			}
+			if (label_operator(labeled_tokens[i - 1].first) == mosh_operator::REDIRECT_LEFT)
+			{
+				
+			}
+		}
+		break;*/
+
+		case token_label::OPERATOR:
+		{
+			switch (label_operator(current_token.first))
+			{
+			case mosh_operator::PIPE:
+				if (save_cmd)
+				{
+					if(pipe)
+					{
+						pipe->set_first_command(*cmd);
+					}
+					else
+					{
+						puts("Pipe not allocated.");
+					}
+					
+				}
+				break;
+			case mosh_operator::SEMICOLON: // end of tree
+				if (save_pipe)
+				{
+					if (pipe)
+					{
+						pipe->set_second_command(*cmd);
+					}
+					else
+					{
+						puts("Pipe not allocated.");
+					}
+					ast_list.push_back(pipe);
+					save_pipe = false;
+					pipe = new mosh_pipe();
+				}
+				else if(save_cmd)
+				{
+					ast_list.push_back(cmd);
+					save_cmd = false;
+				}
+				else
+				{
+					puts("Somthing's wrong");
+				}
+				cmd = new mosh_command("");
+				break;
+			case mosh_operator::OR:
+				break;
+			case mosh_operator::DETACH:
+				break;
+			case mosh_operator::AND:
+				break;
+			case mosh_operator::INVALID:
+				perror("Invalid operator");
+				break;
+			default:
+				break;
+			}
+		}
+		break;
+
+		case token_label::UNDEFINED:
+		{
+			perror("Undefined token type");
+		}
+		break;
+		
+		default:
+		{
+			perror("Undefined token type (default)");
+		}
+		break;
+		}
+	}
+	
+	if (save_cmd && !save_pipe)
+	{
+		ast_list.push_back(cmd);
+	}
+	else if (save_pipe && save_cmd)
+	{
+		if (pipe)
+		{
+			pipe->set_second_command(*cmd);
+		}
+		else
+		{
+			puts("Pipe not allocated.");
+		}
+		ast_list.push_back(pipe);
+	} 
+	
+	return ast_list;
 }
