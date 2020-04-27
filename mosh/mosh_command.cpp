@@ -10,6 +10,11 @@ mosh_command::mosh_command(std::string command, std::vector<std::string> args)
 	// add the original command to the beginning of the args
 	_args.insert(_args.begin(), _original_command);
 
+	for (int i = 0; i < args.size(); i++)
+	{
+		_args.push_back(args[i]);
+	}
+
 	// resolve the literal command, and set _builtin if the command is a mosh-builtin
 	resolve();
 }
@@ -32,7 +37,6 @@ void mosh_command::add_argument(std::string arg)
 
 void mosh_command::resolve()
 {
-	auto path_result = std::find(PATH.begin(), PATH.end(), _command);
 	std::string tmp_command_path;
 
 	if (BUILTINS.find(_command) != BUILTINS.end()) // check if command is mosh-builtin

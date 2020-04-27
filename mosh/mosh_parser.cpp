@@ -1,15 +1,15 @@
 #include "mosh_parser.h"
 
-mosh_operator label_operator(std::string op)
+token_label label_operator(std::string op)
 {
 	if (op == "|")
-		return mosh_operator::PIPE;
+		return token_label::PIPE;
 	if (op == "&")
-		return mosh_operator::DETACH;
+		return token_label::DETACH;
 	if (op == "&&")
-		return mosh_operator::AND;
+		return token_label::AND;
 	if (op == "||")
-		return mosh_operator::OR;
+		return token_label::OR;
 	/*if (op == ">")
 		return mosh_operator::REDIRECT_LEFT;
 	if (op == "(")
@@ -17,23 +17,8 @@ mosh_operator label_operator(std::string op)
 	if (op == ")")
 		return mosh_operator::ROUND_BRACKET_CLOSE;*/
 	if (op == ";")
-		return mosh_operator::SEMICOLON;
-	return mosh_operator::INVALID;
-}
-
-token_label label_token_by_operator(mosh_operator op)
-{
-	switch (op)
-	{
-	/*case mosh_operator::REDIRECT_LEFT:
-		return token_label::FILE;
-	case mosh_operator::ROUND_BRACKET_CLOSE:
-		return token_label::OPERATOR;
-	case mosh_operator::ROUND_BRACKET_OPEN:
-		return token_label::UNDEFINED;*/
-	default:
-		return token_label::COMMAND;
-	}
+		return token_label::SEMICOLON;
+	return token_label::UNDEFINED;
 }
 
 std::vector<std::string> tokenize(std::string s)
@@ -120,7 +105,8 @@ std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::s
 	std::vector<std::pair<std::string, token_label>> labeled_tokens;
 	std::pair<std::string, token_label> current;
 	int i, token_count = tokens.size();
-	token_label next_type = token_label::COMMAND;
+	token_label operator_type;
+	token_label prev_type = token_label::UNDEFINED;
 
 	if (token_count > 0)
 	{
@@ -129,43 +115,63 @@ std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::s
 			current = std::pair<std::string, token_label>();
 			current.first = tokens[i];
 
-			switch (next_type)
+			if(is_operator(tokens[i]))
 			{
-			case token_label::COMMAND:
-			{
-				next_type = token_label::ARGUMENT;
-				current.second = token_label::COMMAND;
-			}
-			break;
-
-			case token_label::ARGUMENT:
-			{
-				next_type = token_label::UNDEFINED;
-				current.second = token_label::ARGUMENT;
-			}
-			break;
-
-			case token_label::FILE:
-			{
-				next_type = token_label::ARGUMENT;
-				current.second = token_label::FILE;
-			}
-			break;
-
-			case token_label::UNDEFINED:
-			default:
-			{
-				if (is_operator(tokens[i]))
+				operator_type = label_operator(tokens[i]);
+				switch (operator_type)
 				{
-					next_type = label_token_by_operator(label_operator(tokens[i]));
-					current.second = token_label::OPERATOR;
+				case token_label::PIPE:
+				case token_label::DETACH:
+				case token_label::AND:
+				case token_label::OR:
+				case token_label::SEMICOLON:
+				{
+					if (prev_type == token_label::COMMAND || prev_type == token_label::ARGUMENT) // valid
+					{
+						current.second = operator_type;
+						prev_type = operator_type;
+					}
+					else
+					{
+						throw std::exception(); // invalid operator location
+					}
 				}
-				else
-				{
-					current.second = token_label::UNDEFINED;
+				break;
+
+				default:
+					puts("Something went wrong in operator checking.");
+					break;
 				}
 			}
-			break;
+			else // token is not a mosh-operator
+			{
+				switch (prev_type)
+				{
+				case token_label::COMMAND:
+				case token_label::ARGUMENT:
+				{
+					// must be an argument
+					current.second = token_label::ARGUMENT;
+					prev_type = token_label::ARGUMENT;
+				}
+				break;
+
+				case token_label::PIPE:
+				case token_label::DETACH:
+				case token_label::AND:
+				case token_label::OR:
+				case token_label::SEMICOLON:
+				case token_label::UNDEFINED:
+				{
+					// must be a command
+					current.second = token_label::COMMAND;
+					prev_type = token_label::COMMAND;
+				}
+				break;
+				
+				default:
+					break;
+				}
 			}
 
 			labeled_tokens.push_back(current);
@@ -195,7 +201,7 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 		{
 			if (cmd)
 			{
-				cmd->add_argument(labeled_tokens[i].first);
+				cmd->add_argument(current_token.first);
 			}
 			else
 			{
@@ -206,11 +212,9 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 
 		case token_label::COMMAND:
 		{
-			//cmd.set_command(labeled_tokens[i].first);
-			cmd = new mosh_command(labeled_tokens[i].first);
+			cmd = new mosh_command(current_token.first);
 			save_cmd = true;
 		}
-			
 		break;
 
 		/*case token_label::FILE:
@@ -225,65 +229,54 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 			}
 		}
 		break;*/
-
-		case token_label::OPERATOR:
-		{
-			switch (label_operator(current_token.first))
+		
+		case token_label::PIPE:
+			if (save_cmd)
 			{
-			case mosh_operator::PIPE:
-				if (save_cmd)
+				if(pipe)
 				{
-					if(pipe)
-					{
-						pipe->set_first_command(*cmd);
-					}
-					else
-					{
-						puts("Pipe not allocated.");
-					}
-					
-				}
-				break;
-			case mosh_operator::SEMICOLON: // end of tree
-				if (save_pipe)
-				{
-					if (pipe)
-					{
-						pipe->set_second_command(*cmd);
-					}
-					else
-					{
-						puts("Pipe not allocated.");
-					}
-					ast_list.push_back(pipe);
-					save_pipe = false;
-					pipe = new mosh_pipe();
-				}
-				else if(save_cmd)
-				{
-					ast_list.push_back(cmd);
-					save_cmd = false;
+					pipe->set_first_command(*cmd);
 				}
 				else
 				{
-					puts("Somthing's wrong");
+					puts("Pipe not allocated.");
 				}
-				cmd = new mosh_command("");
-				break;
-			case mosh_operator::OR:
-				break;
-			case mosh_operator::DETACH:
-				break;
-			case mosh_operator::AND:
-				break;
-			case mosh_operator::INVALID:
-				perror("Invalid operator");
-				break;
-			default:
-				break;
+				
 			}
-		}
-		break;
+			break;
+		case token_label::SEMICOLON: // end of tree
+			if (save_pipe)
+			{
+				if (pipe)
+				{
+					pipe->set_second_command(*cmd);
+				}
+				else
+				{
+					puts("Pipe not allocated.");
+				}
+				ast_list.push_back(pipe);
+				save_pipe = false;
+				pipe = new mosh_pipe();
+			}
+			else if(save_cmd)
+			{
+				ast_list.push_back(cmd);
+				save_cmd = false;
+			}
+			else
+			{
+				puts("Somthing's wrong");
+			}
+			cmd = new mosh_command("");
+			break;
+		
+		/*case token_label::OR:
+			break;
+		case token_label::DETACH:
+			break;
+		case token_label::AND:
+			break;*/
 
 		case token_label::UNDEFINED:
 		{

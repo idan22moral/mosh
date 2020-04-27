@@ -21,12 +21,20 @@ enum class parse_mode {
 enum class token_label {
 	COMMAND,
 	ARGUMENT,
-	OPERATOR,
-	FILE,
+	//OPERATOR,
+	//FILE,
+	PIPE,					// |
+	DETACH,					// &
+	AND,					// &&
+	OR,						// ||
+	SEMICOLON,				// ;
 	UNDEFINED
+	//ROUND_BRACKET_OPEN,	// (
+	//ROUND_BRACKET_CLOSE,	// )
+	//REDIRECT_LEFT,		// >
 };
 
-enum class mosh_operator {
+/*enum class mosh_operator {
 	PIPE,					// |
 	DETACH,					// &
 	AND,					// &&
@@ -36,10 +44,9 @@ enum class mosh_operator {
 	//REDIRECT_LEFT,			// >
 	SEMICOLON,				// ;
 	INVALID
-};
+};*/
 
-mosh_operator label_operator(std::string op);
-token_label label_token_by_operator(mosh_operator op);
+token_label label_operator(std::string op);
 std::vector<std::string> tokenize(std::string s);
 std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::string> tokens);
 std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, token_label>> labeled_tokens);
