@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 #include <ctype.h>
+#include <exception>
 #include "parser_utils.h"
 #include "mosh_ast_node.h"
 #include "mosh_pipe.h"

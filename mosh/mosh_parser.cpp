@@ -50,7 +50,26 @@ std::vector<std::string> tokenize(std::string s)
 			else if (is_operator(s[i]))
 			{
 				save_token(tokens, current_token);
-				tokens.push_back(std::string(1, s[i]));
+				
+				// the current and next chars are operators
+				if (i+1 < slen && is_operator(s[i+1]))
+				{
+					// the current and next chars form an operator (e.g. '|' + '|' = '||')
+					if (is_operator(s.substr(i, 2)))
+					{
+						tokens.push_back(s.substr(i, 2));
+						i++;
+						break; // force switch ending
+					}
+					else
+					{
+						throw std::exception(); // invalid operator (e.g |&)
+					}
+				}
+				else
+				{
+					tokens.push_back(std::string(1, s[i]));
+				}
 			}
 			else
 			{
@@ -221,7 +240,7 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 		{
 			if (i == 0 || last_redirect_index != i - 1)
 			{
-				perror("token parsed as file");
+				puts("token parsed as file");
 			}
 			if (label_operator(labeled_tokens[i - 1].first) == mosh_operator::REDIRECT_LEFT)
 			{
@@ -280,13 +299,13 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 
 		case token_label::UNDEFINED:
 		{
-			perror("Undefined token type");
+			puts("Undefined token type");
 		}
 		break;
 		
 		default:
 		{
-			perror("Undefined token type (default)");
+			puts("Undefined token type (default)");
 		}
 		break;
 		}

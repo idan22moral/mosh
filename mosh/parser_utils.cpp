@@ -1,10 +1,10 @@
 #include "parser_utils.h"
 
-const std::vector<std::string> OPERATORS{"|", "&", "&&", "||", /*"(", ")", ">",*/ ";"};
+const std::vector<std::string> OPERATORS{"|", "&", "&&", "||", ";"};
 
 bool is_operator(char c)
 {
-	return (bool)strchr("|&()>;", c);
+	return (bool)strchr("|&;", c);
 }
 
 bool is_operator(std::string str)

@@ -1,5 +1,30 @@
 #include "mosh.h"
 
+std::string token_label_str(token_label tl)
+{
+	switch (tl)
+	{
+	case token_label::AND:
+		return "AND";
+	case token_label::ARGUMENT:
+		return "ARGUMENT";
+	case token_label::COMMAND:
+		return "COMMAND";
+	case token_label::DETACH:
+		return "DETACH";
+	case token_label::OR:
+		return "OR";
+	case token_label::PIPE:
+		return "PIPE";
+	case token_label::SEMICOLON:
+		return "SEMICOLON";
+	case token_label::UNDEFINED:
+		return "UNDEFINED";
+	default:
+		return "ERROR!";
+	}
+}
+
 void print_prompt()
 {
 	fwrite("$ ", 1, 2, stdout);
@@ -52,7 +77,7 @@ int mosh_interactive()
 		// Loop through the recieved commands
 		for (i = 0; i < result.size(); i++)
 		{
-			std::cout << "(\'" << result[i].first << "\', " << (int)result[i].second << "), ";
+			std::cout << "(\'" << result[i].first << "\', " << token_label_str(result[i].second) << "), ";
 		}
 		std::cout << " ]\n" << std::endl;
 
