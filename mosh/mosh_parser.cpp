@@ -50,11 +50,11 @@ std::vector<std::string> tokenize(std::string s)
 			else if (is_operator(s[i]))
 			{
 				save_token(tokens, current_token);
-				
+
 				// the current and next chars are operators
-				if (i+1 < slen && is_operator(s[i+1]))
+				if (i + 1 < slen && is_operator(s[i + 1]))
 				{
-					// the current and next chars form an operator (e.g. '|' + '|' = '||')
+					// the current and next chars form an operator (e.g. '|' + '|' = "||")
 					if (is_operator(s.substr(i, 2)))
 					{
 						tokens.push_back(s.substr(i, 2));
@@ -63,7 +63,8 @@ std::vector<std::string> tokenize(std::string s)
 					}
 					else
 					{
-						throw std::exception(); // invalid operator (e.g |&)
+						// invalid operator (e.g. "|&")
+						throw mosh_syntax_error("invalid operator - " + s.substr(i, 2));
 					}
 				}
 				else
@@ -134,7 +135,7 @@ std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::s
 			current = std::pair<std::string, token_label>();
 			current.first = tokens[i];
 
-			if(is_operator(tokens[i]))
+			if (is_operator(tokens[i]))
 			{
 				operator_type = label_operator(tokens[i]);
 				switch (operator_type)
@@ -152,13 +153,13 @@ std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::s
 					}
 					else
 					{
-						throw std::exception(); // invalid operator location
+						throw mosh_syntax_error("invalid operator location");
 					}
 				}
 				break;
 
 				default:
-					puts("Something went wrong in operator checking.");
+					mosh_internal_error("unknown operator \"" + tokens[i] + "\" while creating labeling token.");
 					break;
 				}
 			}
@@ -187,7 +188,7 @@ std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::s
 					prev_type = token_label::COMMAND;
 				}
 				break;
-				
+
 				default:
 					break;
 				}
@@ -200,20 +201,20 @@ std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::s
 	return labeled_tokens;
 }
 
-std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, token_label>> labeled_tokens)
+std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, token_label>> labeled_tokens)
 {
-	std::vector<mosh_ast_node*> ast_list;
+	std::vector<mosh_ast_node *> ast_list;
 	std::vector<std::string> args;
 	std::pair<std::string, token_label> current_token;
-	mosh_command* cmd;
-	mosh_pipe* pipe;
+	mosh_command *cmd;
+	mosh_pipe *pipe;
 	bool save_pipe = false, save_cmd = false;
 	int i, token_count = labeled_tokens.size(), last_redirect_index = -1;
 
 	for (i = 0; i < token_count; i++)
 	{
 		current_token = labeled_tokens[i];
-		
+
 		switch (current_token.second)
 		{
 		case token_label::ARGUMENT:
@@ -224,7 +225,7 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 			}
 			else
 			{
-				puts("Command not allocated.");
+				mosh_internal_error("cannot add argument to a command that was not allocated.");
 			}
 		}
 		break;
@@ -236,7 +237,7 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 		}
 		break;
 
-		/*case token_label::FILE:
+			/*case token_label::FILE:
 		{
 			if (i == 0 || last_redirect_index != i - 1)
 			{
@@ -248,19 +249,18 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 			}
 		}
 		break;*/
-		
+
 		case token_label::PIPE:
 			if (save_cmd)
 			{
-				if(pipe)
+				if (pipe)
 				{
 					pipe->set_first_command(*cmd);
 				}
 				else
 				{
-					puts("Pipe not allocated.");
+					mosh_internal_error("cannot set 1st command of pipe that was not allocated.");
 				}
-				
 			}
 			break;
 		case token_label::SEMICOLON: // end of tree
@@ -272,13 +272,13 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 				}
 				else
 				{
-					puts("Pipe not allocated.");
+					mosh_internal_error("cannot set 2nd command of pipe that was not allocated.");
 				}
 				ast_list.push_back(pipe);
 				save_pipe = false;
 				pipe = new mosh_pipe();
 			}
-			else if(save_cmd)
+			else if (save_cmd)
 			{
 				ast_list.push_back(cmd);
 				save_cmd = false;
@@ -289,7 +289,7 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 			}
 			cmd = new mosh_command("");
 			break;
-		
+
 		/*case token_label::OR:
 			break;
 		case token_label::DETACH:
@@ -299,18 +299,16 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 
 		case token_label::UNDEFINED:
 		{
-			puts("Undefined token type");
+			mosh_internal_error("type of \"" + current_token.first + "\" is undefined.");
 		}
 		break;
-		
+
 		default:
-		{
-			puts("Undefined token type (default)");
-		}
-		break;
+			mosh_internal_error("unknown operator \"" + current_token.first + "\" while creating AST.");
+			break;
 		}
 	}
-	
+
 	if (save_cmd && !save_pipe)
 	{
 		ast_list.push_back(cmd);
@@ -323,10 +321,10 @@ std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, to
 		}
 		else
 		{
-			puts("Pipe not allocated.");
+			mosh_internal_error("cannot set 2nd command of pipe that was not allocated.");
 		}
 		ast_list.push_back(pipe);
-	} 
-	
+	}
+
 	return ast_list;
 }
