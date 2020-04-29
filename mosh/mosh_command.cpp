@@ -8,7 +8,8 @@ mosh_command::mosh_command(std::string command, std::vector<std::string> args)
 	: _args(), _original_command(std::move(command)), _command(std::move(command))
 {
 	// add the original command to the beginning of the args
-	_args.insert(_args.begin(), _original_command);
+	std::cout << "pushing original command: " << _original_command << std::endl;
+	_args.push_back(_original_command);
 
 	for (int i = 0; i < args.size(); i++)
 	{
@@ -24,7 +25,11 @@ void mosh_command::set_command(std::string command)
 	_command = command;
 	_original_command = command;
 	_args.clear();
-	_args.insert(_args.begin(), _original_command);
+	if (_args.size() > 0)
+		_args[0] = _original_command;
+	else
+		_args.push_back(_original_command);
+
 	resolve();
 }
 
@@ -41,24 +46,31 @@ void mosh_command::resolve()
 
 	if (BUILTINS.find(_command) != BUILTINS.end()) // check if command is mosh-builtin
 	{
+		std::cout << "BUILTIN!" << std::endl;
 		_builtin = true;
 	}
-	else if (std::filesystem::exists(PWD + "/" + _command)) // check if command in pwd
+	else
 	{
-		_command = PWD + "/" + _command;
-	}
-	else // check if command in one of the environment paths
-	{
-		for (int i = 0; i < PATH.size(); i++)
+		_builtin = false;
+		
+		if (std::filesystem::exists(PWD + "/" + _command)) // check if command in pwd
 		{
-			tmp_command_path = PATH[i] + "/" + _command;
-			if (std::filesystem::exists(tmp_command_path))
+			_command = PWD + "/" + _command;
+		}
+		else // check if command in one of the environment paths
+		{
+			for (int i = 0; i < PATH.size(); i++)
 			{
-				_command = tmp_command_path;
-				break;
+				tmp_command_path = PATH[i] + "/" + _command;
+				if (std::filesystem::exists(tmp_command_path))
+				{
+					_command = tmp_command_path;
+					break;
+				}
 			}
 		}
 	}
+	
 }
 
 bool mosh_command::builtin()

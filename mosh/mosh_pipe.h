@@ -16,16 +16,17 @@
 class mosh_pipe : public mosh_ast_node
 {
 private:
-	mosh_command _first;
-	mosh_command _second;
+	mosh_ast_node* _first;
+	mosh_ast_node* _second;
 public:
 	// Constructors
 	mosh_pipe();
-	mosh_pipe(mosh_command first, mosh_command second);
+	mosh_pipe(mosh_ast_node* first, mosh_ast_node* second);
+	~mosh_pipe();
 
 	// Setters
-	void set_first_command(mosh_command cmd);
-	void set_second_command(mosh_command cmd);
+	void set_left_command(mosh_ast_node* cmd);
+	void set_right_command(mosh_ast_node* cmd);
 
 	// Getters
 	void debug();

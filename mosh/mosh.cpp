@@ -1,8 +1,8 @@
 #include "mosh.h"
 
-std::string token_label_str(token_label tl)
+std::string token_label_str(token_label label)
 {
-	switch (tl)
+	switch (label)
 	{
 	case token_label::AND:
 		return "AND";
@@ -72,7 +72,7 @@ int mosh_interactive()
 		std::cout << " ]\n" << std::endl;
 
 		auto result = label_tokens(tokens);
-
+		
 		std::cout << "Label:\n[ ";
 		// Loop through the recieved commands
 		for (i = 0; i < result.size(); i++)
@@ -104,6 +104,15 @@ int mosh_interactive()
 				}
 			}
 		}
+
+		// free the memory of the AST
+		for (i = 0; i < ast.size(); i++)
+		{
+			delete ast[i];
+			ast[i] = nullptr;
+		}
+		ast.clear();
+		tokens.clear();
 	}
 
 	return 0;

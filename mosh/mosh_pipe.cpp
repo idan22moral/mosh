@@ -1,20 +1,32 @@
 #include "mosh_pipe.h"
 
-mosh_pipe::mosh_pipe() : _first(mosh_command("")), _second(mosh_command(""))
+mosh_pipe::mosh_pipe() : _first(new mosh_command("")), _second(new mosh_command(""))
 {
 }
 
-mosh_pipe::mosh_pipe(mosh_command first, mosh_command second) : _first(first), _second(second)
+mosh_pipe::mosh_pipe(mosh_ast_node* first, mosh_ast_node* second) : _first(first), _second(second)
 {
 }
 
-void mosh_pipe::set_first_command(mosh_command cmd)
+mosh_pipe::~mosh_pipe()
 {
+	delete _first;
+	_first = nullptr;
+	delete _second;
+	_second = nullptr;
+}
+
+void mosh_pipe::set_left_command(mosh_ast_node* cmd)
+{
+	if (_first != nullptr)
+		delete _first;
 	_first = cmd;
 }
 
-void mosh_pipe::set_second_command(mosh_command cmd)
+void mosh_pipe::set_right_command(mosh_ast_node* cmd)
 {
+	if (_second != nullptr)
+		delete _second;
 	_second = cmd;
 }
 
@@ -23,9 +35,9 @@ void mosh_pipe::debug()
 	std::cout << "--------------------------------------------------" << std::endl;
 	std::cout << "Pipe:" << std::endl;
 	std::cout << "First:" << std::endl;
-	_first.debug();
+	_first->debug();
 	std::cout << "Second:" << std::endl;
-	_second.debug();
+	_second->debug();
 	std::cout <<"--------------------------------------------------" << std::endl;
 }
 
@@ -60,7 +72,7 @@ int mosh_pipe::execute()
 		dup2(fds_first[STDOUT_FILENO], STDOUT_FILENO); // move write to stdout
 		close(fds_first[STDOUT_FILENO]);			   // close old stdout
 
-		result = _first.execute();
+		result = _first->execute();
 		exit(result);
 		break;
 	default: // parent
@@ -78,7 +90,7 @@ int mosh_pipe::execute()
 		dup2(fds_first[STDIN_FILENO], STDIN_FILENO); // move read to stdin
 		close(fds_first[STDIN_FILENO]);				 // close old stdin
 
-		result = _second.execute();
+		result = _second->execute();
 		exit(result);
 		break;
 	default: // parent

@@ -21,87 +21,87 @@ token_label label_operator(std::string op)
 	return token_label::UNDEFINED;
 }
 
-std::vector<std::string> tokenize(std::string s)
+std::vector<std::string> tokenize(std::string input)
 {
 	int i, slen;
 	parse_mode mode = parse_mode::NORMAL;
 	std::vector<std::string> tokens;
 	std::stringstream current_token;
 
-	slen = s.length();
+	slen = input.length();
 	for (i = 0; i < slen; i++)
 	{
 		switch (mode)
 		{
 		case parse_mode::NORMAL:
 		{
-			if (s[i] == '\'') // start of ' literal
+			if (input[i] == '\'') // start of ' literal
 			{
 				mode = parse_mode::APOSTROPHE;
 			}
-			else if (s[i] == '\"') // start of " literal
+			else if (input[i] == '\"') // start of " literal
 			{
 				mode = parse_mode::QUOTATION;
 			}
-			else if (s[i] == ' ' || s[i] == '\t') // end of token
+			else if (input[i] == ' ' || input[i] == '\t') // end of token
 			{
 				save_token(tokens, current_token);
 			}
-			else if (is_operator(s[i]))
+			else if (is_operator(input[i]))
 			{
 				save_token(tokens, current_token);
 
 				// the current and next chars are operators
-				if (i + 1 < slen && is_operator(s[i + 1]))
+				if (i + 1 < slen && is_operator(input[i + 1]))
 				{
 					// the current and next chars form an operator (e.g. '|' + '|' = "||")
-					if (is_operator(s.substr(i, 2)))
+					if (is_operator(input.substr(i, 2)))
 					{
-						tokens.push_back(s.substr(i, 2));
+						tokens.push_back(input.substr(i, 2));
 						i++;
 						break; // force switch ending
 					}
 					else
 					{
 						// invalid operator (e.g. "|&")
-						throw mosh_syntax_error("invalid operator - " + s.substr(i, 2));
+						throw mosh_syntax_error("invalid operator - " + input.substr(i, 2));
 					}
 				}
 				else
 				{
-					tokens.push_back(std::string(1, s[i]));
+					tokens.push_back(std::string(1, input[i]));
 				}
 			}
 			else
 			{
-				current_token << s[i];
+				current_token << input[i];
 			}
 		}
 		break;
 
 		case parse_mode::APOSTROPHE:
 		{
-			if (s[i] == '\'') // end of ' literal
+			if (input[i] == '\'') // end of ' literal
 			{
 				mode = parse_mode::NORMAL;
 			}
 			else
 			{
-				current_token << s[i];
+				current_token << input[i];
 			}
 		}
 		break;
 
 		case parse_mode::QUOTATION:
 		{
-			if (s[i] == '\"') // end of " literal
+			if (input[i] == '\"') // end of " literal
 			{
 				mode = parse_mode::NORMAL;
 			}
 			// ********** Add string embedded special chars support here **********
 			else
 			{
-				current_token << s[i];
+				current_token << input[i];
 			}
 		}
 		break;
@@ -208,7 +208,7 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 	std::pair<std::string, token_label> current_token;
 	mosh_command *cmd;
 	mosh_pipe *pipe;
-	bool save_pipe = false, save_cmd = false;
+	bool save_pipe = false, save_cmd = false, set_right_cmd = false;
 	int i, token_count = labeled_tokens.size(), last_redirect_index = -1;
 
 	for (i = 0; i < token_count; i++)
@@ -225,7 +225,7 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 			}
 			else
 			{
-				mosh_internal_error("cannot add argument to a command that was not allocated.");
+				throw mosh_internal_error("cannot add argument to a command that was not allocated.");
 			}
 		}
 		break;
@@ -233,7 +233,15 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 		case token_label::COMMAND:
 		{
 			cmd = new mosh_command(current_token.first);
-			save_cmd = true;
+			if (set_right_cmd && pipe)
+			{
+				pipe->set_right_command(cmd);
+				set_right_cmd = false;
+			}
+			else
+			{
+				ast_list.push_back(cmd);
+			}
 		}
 		break;
 
@@ -251,44 +259,45 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 		break;*/
 
 		case token_label::PIPE:
-			if (save_cmd)
+		{
+			// make sure there's something to pipe to
+			if (ast_list.size() > 0)
 			{
-				if (pipe)
+				if (!ast_list.back()->sealed())
 				{
-					pipe->set_first_command(*cmd);
+					pipe = new mosh_pipe();
+					pipe->set_right_command(ast_list.back());
+
+					ast_list.pop_back();
+					ast_list.push_back(pipe);
+
+					// pipe is valid only if both commands are set
+					set_right_cmd = true;
 				}
 				else
 				{
-					mosh_internal_error("cannot set 1st command of pipe that was not allocated.");
+					throw mosh_syntax_error("command was not specified before a pipe.");
 				}
-			}
-			break;
-		case token_label::SEMICOLON: // end of tree
-			if (save_pipe)
-			{
-				if (pipe)
-				{
-					pipe->set_second_command(*cmd);
-				}
-				else
-				{
-					mosh_internal_error("cannot set 2nd command of pipe that was not allocated.");
-				}
-				ast_list.push_back(pipe);
-				save_pipe = false;
-				pipe = new mosh_pipe();
-			}
-			else if (save_cmd)
-			{
-				ast_list.push_back(cmd);
-				save_cmd = false;
 			}
 			else
 			{
-				puts("Somthing's wrong");
+				throw mosh_syntax_error("command was not specified before a pipe.");
 			}
-			cmd = new mosh_command("");
-			break;
+		}
+		break;
+
+		case token_label::SEMICOLON: // end of tree
+		{
+			if (ast_list.size() > 0)
+			{
+				ast_list.back()->seal();
+			}
+			else
+			{
+				throw mosh_syntax_error("unexpected token `;`");
+			}
+		}
+		break;
 
 		/*case token_label::OR:
 			break;
@@ -299,31 +308,14 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 
 		case token_label::UNDEFINED:
 		{
-			mosh_internal_error("type of \"" + current_token.first + "\" is undefined.");
+			throw mosh_internal_error("type of \"" + current_token.first + "\" is undefined.");
 		}
 		break;
 
 		default:
-			mosh_internal_error("unknown operator \"" + current_token.first + "\" while creating AST.");
+			throw mosh_internal_error("unknown operator \"" + current_token.first + "\" while creating AST.");
 			break;
 		}
-	}
-
-	if (save_cmd && !save_pipe)
-	{
-		ast_list.push_back(cmd);
-	}
-	else if (save_pipe && save_cmd)
-	{
-		if (pipe)
-		{
-			pipe->set_second_command(*cmd);
-		}
-		else
-		{
-			mosh_internal_error("cannot set 2nd command of pipe that was not allocated.");
-		}
-		ast_list.push_back(pipe);
 	}
 
 	return ast_list;
