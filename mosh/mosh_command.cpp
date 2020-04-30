@@ -5,7 +5,7 @@ mosh_command::mosh_command(std::string command) : mosh_command(command, std::vec
 }
 
 mosh_command::mosh_command(std::string command, std::vector<std::string> args)
-	: _args(), _original_command(std::move(command)), _command(std::move(command))
+	: _args(), _original_command(command), _command(command)
 {
 	// add the original command to the beginning of the args
 	std::cout << "pushing original command: " << _original_command << std::endl;
