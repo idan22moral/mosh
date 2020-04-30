@@ -37,11 +37,11 @@ std::string get_input()
 	return line;
 }
 
-int mosh_executer(std::vector<mosh_ast_node> commands)
+int execute_commands(std::vector<mosh_ast_node*> commands)
 {
 	for (auto &&command : commands)
 	{
-		command.execute();
+		command->execute();
 	}
 	return 0;
 }
