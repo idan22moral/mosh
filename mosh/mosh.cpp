@@ -37,7 +37,7 @@ std::string get_input()
 	return line;
 }
 
-int execute_commands(std::vector<mosh_ast_node*> commands)
+int execute_commands(std::vector<mosh_ast_node *> commands)
 {
 	for (auto &&command : commands)
 	{
@@ -54,67 +54,76 @@ int mosh_interactive()
 
 	while (true)
 	{
-		print_prompt();
-		line = get_input();
-
-		if (std::cin.eof())
-			return 1;
-
-		// Convert the raw input into tokens
-		tokens = tokenize(line);
-		
-		std::cout << "Tokenize:\n[ ";
-		// Loop through the recieved commands
-		for (i = 0; i < tokens.size(); i++)
+		try
 		{
-			std::cout << "\'" << tokens[i] << "\', ";
-		}
-		std::cout << " ]\n" << std::endl;
+			print_prompt();
+			line = get_input();
 
-		auto result = label_tokens(tokens);
-		
-		std::cout << "Label:\n[ ";
-		// Loop through the recieved commands
-		for (i = 0; i < result.size(); i++)
-		{
-			std::cout << "(\'" << result[i].first << "\', " << token_label_str(result[i].second) << "), ";
-		}
-		std::cout << " ]\n" << std::endl;
+			if (std::cin.eof())
+				return 1;
 
-		auto ast = build_ast_list(result);
+			// Convert the raw input into tokens
+			tokens = tokenize(line);
 
-		for (i = 0; i < ast.size(); i++)
-		{
-			auto node = ast[i];
-			mosh_command* cmd = dynamic_cast<mosh_command*>(node);
-			if (cmd)
+			std::cout << "Tokenize:\n[ ";
+			// Loop through the recieved commands
+			for (i = 0; i < tokens.size(); i++)
 			{
-				cmd->debug();
+				std::cout << "\'" << tokens[i] << "\', ";
 			}
-			else
+			std::cout << " ]\n"
+					  << std::endl;
+
+			auto result = label_tokens(tokens);
+
+			std::cout << "Label:\n[ ";
+			// Loop through the recieved commands
+			for (i = 0; i < result.size(); i++)
 			{
-				mosh_pipe* pipe = dynamic_cast<mosh_pipe*>(node);
-				if (pipe)
+				std::cout << "(\'" << result[i].first << "\', " << token_label_str(result[i].second) << "), ";
+			}
+			std::cout << " ]\n"
+					  << std::endl;
+
+			auto ast = build_ast_list(result);
+
+			for (i = 0; i < ast.size(); i++)
+			{
+				auto node = ast[i];
+				mosh_command *cmd = dynamic_cast<mosh_command *>(node);
+				if (cmd)
 				{
-					pipe->debug();
+					cmd->debug();
 				}
 				else
 				{
-					puts("ERROR!");
+					mosh_pipe *pipe = dynamic_cast<mosh_pipe *>(node);
+					if (pipe)
+					{
+						pipe->debug();
+					}
+					else
+					{
+						puts("ERROR!");
+					}
 				}
 			}
-		}
-		
-		execute_commands(ast);
 
-		// free the memory of the AST
-		for (i = 0; i < ast.size(); i++)
-		{
-			delete ast[i];
-			ast[i] = nullptr;
+			execute_commands(ast);
+
+			// free the memory of the AST
+			for (i = 0; i < ast.size(); i++)
+			{
+				delete ast[i];
+				ast[i] = nullptr;
+			}
+			ast.clear();
+			tokens.clear();
 		}
-		ast.clear();
-		tokens.clear();
+		catch (const std::exception &e)
+		{
+			std::cerr << e.what() << '\n';
+		}
 	}
 
 	return 0;

@@ -43,11 +43,13 @@ void mosh_command::add_argument(std::string arg)
 void mosh_command::resolve()
 {
 	std::string tmp_command_path;
+	bool resolved = false;
 
 	if (BUILTINS.find(_command) != BUILTINS.end()) // check if command is mosh-builtin
 	{
 		std::cout << "BUILTIN!" << std::endl;
 		_builtin = true;
+		resolved = true;
 	}
 	else
 	{
@@ -56,6 +58,7 @@ void mosh_command::resolve()
 		if (std::filesystem::exists(PWD + "/" + _command)) // check if command in pwd
 		{
 			_command = PWD + "/" + _command;
+			resolved = true;
 		}
 		else // check if command in one of the environment paths
 		{
@@ -65,10 +68,16 @@ void mosh_command::resolve()
 				if (std::filesystem::exists(tmp_command_path))
 				{
 					_command = tmp_command_path;
+					resolved = true;
 					break;
 				}
 			}
 		}
+	}
+
+	if (!resolved)
+	{
+		throw mosh_syntax_error("command '" + _original_command + "' does not exist.");
 	}
 }
 
@@ -114,7 +123,7 @@ int mosh_command::execute()
 		switch (child_pid)
 		{
 		case -1:
-			throw mosh_internal_error("fork failed on command '' execution.");
+			throw mosh_internal_error("fork failed on command '" + _original_command + "' execution.");
 
 		case 0: // child
 			return execv(_command.c_str(), c_args.data());

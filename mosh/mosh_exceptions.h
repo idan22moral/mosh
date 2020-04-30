@@ -4,27 +4,17 @@
 
 #include <exception>
 #include <string>
+#include <sstream>
 
-class mosh_exception : std::exception
+
+class mosh_exception : public std::runtime_error
 {
-private:
-	std::string _prefix;
-	std::string _message;
-
 public:
-	mosh_exception(std::string prefix, std::string message)
-	{
-		_prefix = prefix;
-		_message = message;
-	}
-
-	const char *what() const throw()
-	{
-		return (_prefix + _message).c_str();
-	}
+	mosh_exception(std::string prefix, std::string message);
 };
 
-class mosh_syntax_error : mosh_exception
+
+class mosh_syntax_error : public mosh_exception
 {
 public:
 	mosh_syntax_error() : mosh_syntax_error("unknown")
@@ -36,7 +26,8 @@ public:
 	}
 };
 
-class mosh_internal_error : mosh_exception
+
+class mosh_internal_error : public mosh_exception
 {
 public:
 	mosh_internal_error() : mosh_internal_error("unknown")
