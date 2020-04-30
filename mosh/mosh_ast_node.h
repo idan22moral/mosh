@@ -8,6 +8,7 @@ private:
 	bool _sealed;
 
 public:
+	mosh_ast_node();
 	virtual int execute() = 0;
 	virtual void debug() = 0;
 	void seal();

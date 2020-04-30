@@ -206,8 +206,8 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 	std::vector<mosh_ast_node *> ast_list;
 	std::vector<std::string> args;
 	std::pair<std::string, token_label> current_token;
-	mosh_command *cmd;
-	mosh_pipe *pipe;
+	mosh_command *cmd = nullptr;
+	mosh_pipe *pipe = nullptr;
 	bool save_pipe = false, save_cmd = false, set_right_cmd = false;
 	int i, token_count = labeled_tokens.size(), last_redirect_index = -1;
 
@@ -266,7 +266,7 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 				if (!ast_list.back()->sealed())
 				{
 					pipe = new mosh_pipe();
-					pipe->set_right_command(ast_list.back());
+					pipe->set_left_command(ast_list.back());
 
 					ast_list.pop_back();
 					ast_list.push_back(pipe);
