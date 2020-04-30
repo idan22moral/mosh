@@ -104,6 +104,8 @@ int mosh_interactive()
 				}
 			}
 		}
+		
+		execute_commands(ast);
 
 		// free the memory of the AST
 		for (i = 0; i < ast.size(); i++)

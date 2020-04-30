@@ -1,3 +1,7 @@
+#ifndef _MOSH_EXCEPTIONS_H
+#define _MOSH_EXCEPTIONS_H
+
+
 #include <exception>
 #include <string>
 
@@ -43,3 +47,5 @@ public:
 	{
 	}
 };
+
+#endif

@@ -52,7 +52,7 @@ void mosh_command::resolve()
 	else
 	{
 		_builtin = false;
-		
+
 		if (std::filesystem::exists(PWD + "/" + _command)) // check if command in pwd
 		{
 			_command = PWD + "/" + _command;
@@ -70,7 +70,6 @@ void mosh_command::resolve()
 			}
 		}
 	}
-	
 }
 
 bool mosh_command::builtin()
@@ -82,8 +81,8 @@ void mosh_command::debug()
 {
 	std::cout << "Resolved command: " << _command << std::endl;
 	std::cout << "Original command: " << _original_command << std::endl;
-	std::cout << "Builtin: "<< (_builtin ? "True" : "False") << std::endl;
-	std::cout << "Args (" <<  _args.size() << "): [";
+	std::cout << "Builtin: " << (_builtin ? "True" : "False") << std::endl;
+	std::cout << "Args (" << _args.size() << "): [";
 	for (int i = 0; i < _args.size(); i++)
 	{
 		std::cout << "\"" << _args[i] << "\"";
@@ -96,7 +95,7 @@ void mosh_command::debug()
 int mosh_command::execute()
 {
 	std::vector<char *> c_args;
-	int fds_first[2], fds_second[2], result;
+	int fds_first[2], fds_second[2], result, child_pid;
 
 	if (_builtin)
 	{
@@ -109,6 +108,20 @@ int mosh_command::execute()
 		{
 			c_args.push_back((char *)arg.c_str()); // unsafe?
 		}
-		return execv(_command.c_str(), c_args.data());
+
+		child_pid = fork();
+
+		switch (child_pid)
+		{
+		case -1:
+			throw mosh_internal_error("fork failed on command '' execution.");
+
+		case 0: // child
+			return execv(_command.c_str(), c_args.data());
+
+		default: // parent
+			waitpid(child_pid, &result, 0);
+			return result;
+		}
 	}
 }
