@@ -1,5 +1,20 @@
-build/mosh : mosh/* build
-	g++ -std=c++17 -lstdc++fs -o build/mosh mosh/*
+CC := g++
+ARGS := -ggdb -std=c++17 -lstdc++fs
 
-build :
-	mkdir build
+BUILD := build
+SRC := mosh
+
+EXECUTABLE := mosh
+
+
+all: $(BUILD)/$(EXECUTABLE)
+
+run: clean all
+	clear
+	./$(BUILD)/$(EXECUTABLE)
+
+$(BUILD)/$(EXECUTABLE) : $(SRC)/*
+	$(CC) $(ARGS) $^ -o $@
+
+clean:
+	-rm $(BUILD)/*
