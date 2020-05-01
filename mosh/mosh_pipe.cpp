@@ -43,62 +43,24 @@ void mosh_pipe::debug()
 
 int mosh_pipe::execute()
 {
-	int result, fds_first[2], fds_second[2], child_pid;
+	int result, pipe_fds[2], child_pid;
 
-	result = pipe(fds_first);
-
-	if (result)
-	{
-		perror("pipe failed");
-		return EXIT_FAILURE;
-	}
-
-	result = pipe(fds_second);
+	result = pipe(pipe_fds);
 
 	if (result)
 	{
-		perror("pipe failed");
-		return EXIT_FAILURE;
+		throw mosh_internal_error("pipe creation failed on pipe execution (first).");
 	}
 
-	// first child (writer)
-	child_pid = fork();
-	switch (child_pid)
-	{
-	case -1:
-		throw mosh_internal_error("fork failed on pipe execution (first fork).");
-		return EXIT_FAILURE;
-	case 0:	// child
-		close(fds_first[STDIN_FILENO]);				   // close useless newly opened stdin
-		dup2(fds_first[STDOUT_FILENO], STDOUT_FILENO); // move write to stdout
-		close(fds_first[STDOUT_FILENO]);			   // close old stdout
-		
-		try
-		{
-			result = _first->execute();
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << e.what() << '\n';
-			result = EXIT_FAILURE;
-		}
-		exit(result);
-
-	default: // parent
-		waitpid(child_pid, &result, 0);
-		return result;
-	}
-
-	// second child (reader)
+	// left child (reader)
 	switch (fork())
 	{
 	case -1:
 		throw mosh_internal_error("fork failed on pipe execution (second fork).");
-		return EXIT_FAILURE;
 	case 0:	// child
-		close(fds_second[STDOUT_FILENO]);			 // close useless newly opened stdout
-		dup2(fds_second[STDIN_FILENO], STDIN_FILENO); // move read to stdin
-		close(fds_second[STDIN_FILENO]);				 // close old stdin
+		close(pipe_fds[STDOUT_FILENO]);				// close useless allocated stdout
+		dup2(pipe_fds[STDIN_FILENO], STDIN_FILENO);	// move pipe read to stdin
+		close(pipe_fds[STDIN_FILENO]);				// close old stdin
 		
 		try
 		{
@@ -112,9 +74,41 @@ int mosh_pipe::execute()
 		exit(result);
 
 	default: // parent
-		waitpid(child_pid, &result, 0);
-		return result;
+		break;
 	}
+
+	// right child (writer)
+	child_pid = fork();
+	switch (child_pid)
+	{
+	case -1:
+		throw mosh_internal_error("fork failed on pipe execution (first fork).");
+	case 0:	// child
+		close(pipe_fds[STDIN_FILENO]);				   // close useless allocated stdin
+		dup2(pipe_fds[STDOUT_FILENO], STDOUT_FILENO); // move write to stdout
+		close(pipe_fds[STDOUT_FILENO]);			   // close old stdout
+		
+		try
+		{
+			result = _first->execute();
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what() << '\n';
+			result = EXIT_FAILURE;
+		}
+		exit(result);
+
+	default: // parent
+		break;
+	}
+
+	// the parent does not need the pipe
+	close(pipe_fds[STDIN_FILENO]);
+	close(pipe_fds[STDOUT_FILENO]);
+
+	// wait for both children to finish
+	while(wait(NULL) > 0);
 
 	return EXIT_SUCCESS;
 }
