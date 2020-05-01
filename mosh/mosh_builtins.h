@@ -13,5 +13,6 @@ std::string _cwd();
 
 int cd(std::vector<std::string> argv);
 int set(std::vector<std::string> argv);
+int mosh_exit(std::vector<std::string> argv);
 
 #endif

@@ -1,6 +1,5 @@
 #include "mosh_builtins.h"
 
-
 std::string _cwd()
 {
 	char buffer[FILENAME_MAX];
@@ -9,7 +8,7 @@ std::string _cwd()
 }
 
 int cd(std::vector<std::string> argv)
-{	
+{
 	static std::string previous_dir = _cwd();
 	std::string temp_dir_str;
 	struct passwd *pw;
@@ -41,7 +40,7 @@ int cd(std::vector<std::string> argv)
 		if (argv[1] == "-")
 		{
 			result = chdir(previous_dir.data());
-			
+
 			if (result)
 			{
 				perror("cd");
@@ -49,13 +48,13 @@ int cd(std::vector<std::string> argv)
 			}
 			else
 			{
-				std:: cout << previous_dir << std::endl;
+				std::cout << previous_dir << std::endl;
 			}
 		}
 		else // change directory to the given directory
 		{
 			result = chdir(argv[1].c_str());
-			
+
 			if (result)
 			{
 				perror("cd");
@@ -72,4 +71,9 @@ int cd(std::vector<std::string> argv)
 int set(std::vector<std::string> argv)
 {
 	return 0;
+}
+
+int mosh_exit(std::vector<std::string> argv)
+{
+	exit(0);
 }
