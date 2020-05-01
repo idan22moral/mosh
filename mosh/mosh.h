@@ -19,6 +19,7 @@ extern bool debug_mode;
 void print_prompt();
 std::string get_input();
 int mosh_executer(std::vector<mosh_ast_node> commands);
+void parse_commandline_arguments(int argc, char* argv[]);
 int mosh_interactive();
 
 #endif //MOSH_H

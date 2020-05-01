@@ -39,7 +39,6 @@ void mosh_command::resolve()
 
 	if (BUILTINS.find(_command) != BUILTINS.end()) // check if command is mosh-builtin
 	{
-		std::cout << "BUILTIN!" << std::endl;
 		_builtin = true;
 		resolved = true;
 	}

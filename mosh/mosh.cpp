@@ -30,6 +30,19 @@ int execute_commands(std::vector<mosh_ast_node *> commands)
 	return 0;
 }
 
+void parse_commandline_arguments(int argc, char* argv[])
+{
+	int i;
+
+	for (i = 1; i < argc; i++)
+	{
+		if (!strcmp(argv[i], "-d")) // debug mode
+		{
+			debug_mode = true;
+		}
+	}
+}
+
 int mosh_interactive()
 {
 	int i = 0;
