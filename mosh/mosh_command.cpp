@@ -118,6 +118,7 @@ int mosh_command::execute()
 		{
 			c_args.push_back((char *)arg.c_str()); // unsafe?
 		}
+		c_args.push_back(NULL);
 
 		child_pid = fork();
 
