@@ -1,18 +1,15 @@
 #ifndef _MOSH_EXCEPTIONS_H
 #define _MOSH_EXCEPTIONS_H
 
-
 #include <exception>
 #include <string>
 #include <sstream>
-
 
 class mosh_exception : public std::runtime_error
 {
 public:
 	mosh_exception(std::string prefix, std::string message);
 };
-
 
 class mosh_syntax_error : public mosh_exception
 {
@@ -25,7 +22,6 @@ public:
 	{
 	}
 };
-
 
 class mosh_internal_error : public mosh_exception
 {

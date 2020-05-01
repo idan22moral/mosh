@@ -4,7 +4,7 @@ mosh_pipe::mosh_pipe() : _first(new mosh_command("")), _second(new mosh_command(
 {
 }
 
-mosh_pipe::mosh_pipe(mosh_ast_node* first, mosh_ast_node* second) : _first(first), _second(second)
+mosh_pipe::mosh_pipe(mosh_ast_node *first, mosh_ast_node *second) : _first(first), _second(second)
 {
 }
 
@@ -16,14 +16,14 @@ mosh_pipe::~mosh_pipe()
 	_second = nullptr;
 }
 
-void mosh_pipe::set_left_command(mosh_ast_node* cmd)
+void mosh_pipe::set_left_command(mosh_ast_node *cmd)
 {
 	if (_first != nullptr)
 		delete _first;
 	_first = cmd;
 }
 
-void mosh_pipe::set_right_command(mosh_ast_node* cmd)
+void mosh_pipe::set_right_command(mosh_ast_node *cmd)
 {
 	if (_second != nullptr)
 		delete _second;
@@ -38,7 +38,7 @@ void mosh_pipe::debug()
 	_first->debug();
 	std::cout << "Second:" << std::endl;
 	_second->debug();
-	std::cout <<"--------------------------------------------------" << std::endl;
+	std::cout << "--------------------------------------------------" << std::endl;
 }
 
 int mosh_pipe::execute()
@@ -57,16 +57,16 @@ int mosh_pipe::execute()
 	{
 	case -1:
 		throw mosh_internal_error("fork failed on pipe execution (second fork).");
-	case 0:	// child
+	case 0:											// child
 		close(pipe_fds[STDOUT_FILENO]);				// close useless allocated stdout
-		dup2(pipe_fds[STDIN_FILENO], STDIN_FILENO);	// move pipe read to stdin
+		dup2(pipe_fds[STDIN_FILENO], STDIN_FILENO); // move pipe read to stdin
 		close(pipe_fds[STDIN_FILENO]);				// close old stdin
-		
+
 		try
 		{
 			result = _second->execute();
 		}
-		catch(const mosh_exception& e)
+		catch (const mosh_exception &e)
 		{
 			std::cerr << e.what() << '\n';
 			result = EXIT_FAILURE;
@@ -83,16 +83,16 @@ int mosh_pipe::execute()
 	{
 	case -1:
 		throw mosh_internal_error("fork failed on pipe execution (first fork).");
-	case 0:	// child
-		close(pipe_fds[STDIN_FILENO]);				   // close useless allocated stdin
+	case 0:											  // child
+		close(pipe_fds[STDIN_FILENO]);				  // close useless allocated stdin
 		dup2(pipe_fds[STDOUT_FILENO], STDOUT_FILENO); // move write to stdout
-		close(pipe_fds[STDOUT_FILENO]);			   // close old stdout
-		
+		close(pipe_fds[STDOUT_FILENO]);				  // close old stdout
+
 		try
 		{
 			result = _first->execute();
 		}
-		catch(const std::exception& e)
+		catch (const std::exception &e)
 		{
 			std::cerr << e.what() << '\n';
 			result = EXIT_FAILURE;
@@ -108,7 +108,8 @@ int mosh_pipe::execute()
 	close(pipe_fds[STDOUT_FILENO]);
 
 	// wait for both children to finish
-	while(wait(NULL) > 0);
+	while (wait(NULL) > 0)
+		;
 
 	return EXIT_SUCCESS;
 }

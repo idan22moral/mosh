@@ -16,22 +16,24 @@
 #include "mosh_pipe.h"
 #include "mosh_command.h"
 
-enum class parse_mode {
+enum class parse_mode
+{
 	NORMAL,
-	APOSTROPHE,	// '
+	APOSTROPHE, // '
 	QUOTATION	// "
 };
 
-enum class token_label {
+enum class token_label
+{
 	COMMAND,
 	ARGUMENT,
 	//OPERATOR,
 	//FILE,
-	PIPE,					// |
-	DETACH,					// &
-	AND,					// &&
-	OR,						// ||
-	SEMICOLON,				// ;
+	PIPE,	   // |
+	DETACH,	   // &
+	AND,	   // &&
+	OR,		   // ||
+	SEMICOLON, // ;
 	UNDEFINED
 	//ROUND_BRACKET_OPEN,	// (
 	//ROUND_BRACKET_CLOSE,	// )
@@ -41,6 +43,6 @@ enum class token_label {
 token_label label_operator(std::string op);
 std::vector<std::string> tokenize(std::string s);
 std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::string> tokens);
-std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, token_label>> labeled_tokens);
+std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, token_label>> labeled_tokens);
 
 #endif

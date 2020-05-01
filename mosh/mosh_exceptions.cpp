@@ -4,5 +4,5 @@ mosh_exception::mosh_exception(std::string prefix, std::string message) : runtim
 {
 	std::stringstream stream;
 	stream << prefix << message;
-	((std::runtime_error&)*this) = std::runtime_error(stream.str());
+	((std::runtime_error &)*this) = std::runtime_error(stream.str());
 }

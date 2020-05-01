@@ -299,7 +299,7 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 		}
 		break;
 
-		/*case token_label::OR:
+			/*case token_label::OR:
 			break;
 		case token_label::DETACH:
 			break;
