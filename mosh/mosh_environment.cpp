@@ -12,4 +12,3 @@ std::vector<std::string> PATH{
 	"/usr/games",
 	"/usr/local/games",
 	"/snap/bin"};
-std::string PWD;

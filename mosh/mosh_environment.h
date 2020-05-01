@@ -10,6 +10,5 @@
 
 extern std::map<std::string, std::function<int(std::vector<std::string>)>> BUILTINS;
 extern std::vector<std::string> PATH;
-extern std::string PWD;
 
 #endif

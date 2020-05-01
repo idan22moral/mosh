@@ -34,7 +34,7 @@ void mosh_command::add_argument(std::string arg)
 
 void mosh_command::resolve()
 {
-	std::string tmp_command_path;
+	std::string tmp_command_path, cwd_str;
 	bool resolved = false;
 
 	if (BUILTINS.find(_command) != BUILTINS.end()) // check if command is mosh-builtin
@@ -45,10 +45,11 @@ void mosh_command::resolve()
 	else
 	{
 		_builtin = false;
-
-		if (std::filesystem::exists(PWD + "/" + _command)) // check if command in pwd
+		
+		cwd_str = _cwd() + "/" + _command;
+		if (std::filesystem::exists(cwd_str)) // check if command in pwd
 		{
-			_command = PWD + "/" + _command;
+			_command = cwd_str;
 			resolved = true;
 		}
 		else // check if command in one of the environment paths
