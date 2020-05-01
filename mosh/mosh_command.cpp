@@ -15,9 +15,6 @@ mosh_command::mosh_command(std::string command, std::vector<std::string> args)
 	{
 		_args.push_back(args[i]);
 	}
-
-	// resolve the literal command, and set _builtin if the command is a mosh-builtin
-	resolve();
 }
 
 void mosh_command::set_command(std::string command)
@@ -29,15 +26,11 @@ void mosh_command::set_command(std::string command)
 		_args[0] = _original_command;
 	else
 		_args.push_back(_original_command);
-
-	resolve();
 }
 
 void mosh_command::add_argument(std::string arg)
 {
-	std::cout << "Pushing argument: " << arg << std::endl;
 	_args.push_back(arg);
-	std::cout << "Pushed: " << _args.back() << std::endl;
 }
 
 void mosh_command::resolve()
@@ -86,6 +79,11 @@ bool mosh_command::builtin()
 	return _builtin;
 }
 
+std::string mosh_command::original_command()
+{
+	return _original_command;
+}
+
 void mosh_command::debug()
 {
 	std::cout << "Resolved command: " << _command << std::endl;
@@ -105,6 +103,9 @@ int mosh_command::execute()
 {
 	std::vector<char *> c_args;
 	int fds_first[2], fds_second[2], result, child_pid;
+
+	// resolve the command
+	resolve();
 
 	if (_builtin)
 	{
@@ -126,7 +127,7 @@ int mosh_command::execute()
 			throw mosh_internal_error("fork failed on command '" + _original_command + "' execution.");
 
 		case 0: // child
-			return execv(_command.c_str(), c_args.data());
+			exit(execv(_command.c_str(), c_args.data()));
 
 		default: // parent
 			waitpid(child_pid, &result, 0);

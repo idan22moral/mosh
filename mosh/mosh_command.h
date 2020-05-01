@@ -33,6 +33,7 @@ public:
 
 	// Getters
 	bool builtin();
+	std::string original_command();
 	void debug();
 
 	void resolve();

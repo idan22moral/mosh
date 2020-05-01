@@ -43,11 +43,11 @@ void mosh_pipe::debug()
 
 int mosh_pipe::execute()
 {
-	int result, fds_first[2], fds_second[2];
+	int result, fds_first[2], fds_second[2], child_pid;
 
 	result = pipe(fds_first);
 
-	if (result == 0)
+	if (result)
 	{
 		perror("pipe failed");
 		return EXIT_FAILURE;
@@ -55,46 +55,65 @@ int mosh_pipe::execute()
 
 	result = pipe(fds_second);
 
-	if (result == 0)
+	if (result)
 	{
 		perror("pipe failed");
 		return EXIT_FAILURE;
 	}
 
 	// first child (writer)
-	switch (fork())
+	child_pid = fork();
+	switch (child_pid)
 	{
 	case -1:
-		perror("fork failed");
+		throw mosh_internal_error("fork failed on pipe execution (first fork).");
 		return EXIT_FAILURE;
 	case 0:	// child
 		close(fds_first[STDIN_FILENO]);				   // close useless newly opened stdin
 		dup2(fds_first[STDOUT_FILENO], STDOUT_FILENO); // move write to stdout
 		close(fds_first[STDOUT_FILENO]);			   // close old stdout
-
-		result = _first->execute();
+		
+		try
+		{
+			result = _first->execute();
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << e.what() << '\n';
+			result = EXIT_FAILURE;
+		}
 		exit(result);
-		break;
+
 	default: // parent
-		break;
+		waitpid(child_pid, &result, 0);
+		return result;
 	}
 
 	// second child (reader)
 	switch (fork())
 	{
 	case -1:
-		perror("fork failed");
+		throw mosh_internal_error("fork failed on pipe execution (second fork).");
 		return EXIT_FAILURE;
 	case 0:	// child
 		close(fds_second[STDOUT_FILENO]);			 // close useless newly opened stdout
-		dup2(fds_first[STDIN_FILENO], STDIN_FILENO); // move read to stdin
-		close(fds_first[STDIN_FILENO]);				 // close old stdin
-
-		result = _second->execute();
+		dup2(fds_second[STDIN_FILENO], STDIN_FILENO); // move read to stdin
+		close(fds_second[STDIN_FILENO]);				 // close old stdin
+		
+		try
+		{
+			result = _second->execute();
+		}
+		catch(const mosh_exception& e)
+		{
+			std::cerr << e.what() << '\n';
+			result = EXIT_FAILURE;
+		}
 		exit(result);
-		break;
+
 	default: // parent
-		break;
+		waitpid(child_pid, &result, 0);
+		return result;
 	}
 
 	return EXIT_SUCCESS;

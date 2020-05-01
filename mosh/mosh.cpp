@@ -41,7 +41,14 @@ int execute_commands(std::vector<mosh_ast_node *> commands)
 {
 	for (auto &&command : commands)
 	{
-		command->execute();
+		try
+		{
+			command->execute();
+		}
+		catch(const mosh_exception& e)
+		{
+			std::cerr << e.what() << '\n';
+		}
 	}
 	return 0;
 }
@@ -51,17 +58,19 @@ int mosh_interactive()
 	int i = 0;
 	std::string line;
 	std::vector<std::string> tokens;
+	std::vector<std::pair<std::string, token_label>> labeled_tokens;
+	std::vector<mosh_ast_node *> ast;
 
 	while (true)
 	{
+		print_prompt();
+		line = get_input();
+
+		if (std::cin.eof())
+			return 1;
+		
 		try
 		{
-			print_prompt();
-			line = get_input();
-
-			if (std::cin.eof())
-				return 1;
-
 			// Convert the raw input into tokens
 			tokens = tokenize(line);
 
@@ -71,21 +80,35 @@ int mosh_interactive()
 			{
 				std::cout << "\'" << tokens[i] << "\', ";
 			}
-			std::cout << " ]\n"
-					  << std::endl;
+			std::cout << " ]\n" << std::endl;
+		}
+		catch (const mosh_exception &e)
+		{
+			std::cerr << e.what() << '\n';
+			continue;
+		}
 
-			auto result = label_tokens(tokens);
+		try
+		{
+			labeled_tokens = label_tokens(tokens);
 
 			std::cout << "Label:\n[ ";
 			// Loop through the recieved commands
-			for (i = 0; i < result.size(); i++)
+			for (i = 0; i < labeled_tokens.size(); i++)
 			{
-				std::cout << "(\'" << result[i].first << "\', " << token_label_str(result[i].second) << "), ";
+				std::cout << "(\'" << labeled_tokens[i].first << "\', " << token_label_str(labeled_tokens[i].second) << "), ";
 			}
-			std::cout << " ]\n"
-					  << std::endl;
+			std::cout << " ]\n" << std::endl;
+		}
+		catch(const mosh_exception &e)
+		{ 
+			std::cerr << e.what() << '\n';
+		}
+		
 
-			auto ast = build_ast_list(result);
+		try
+		{
+			ast = build_ast_list(labeled_tokens);
 
 			for (i = 0; i < ast.size(); i++)
 			{
@@ -104,26 +127,27 @@ int mosh_interactive()
 					}
 					else
 					{
-						puts("ERROR!");
+						throw mosh_internal_error("ast node was not command/pipe.");
 					}
 				}
 			}
-
-			execute_commands(ast);
-
-			// free the memory of the AST
-			for (i = 0; i < ast.size(); i++)
-			{
-				delete ast[i];
-				ast[i] = nullptr;
-			}
-			ast.clear();
-			tokens.clear();
 		}
-		catch (const std::exception &e)
+		catch(const mosh_exception& e)
 		{
 			std::cerr << e.what() << '\n';
 		}
+		
+		execute_commands(ast);
+
+		// free the memory of the AST
+		for (i = 0; i < ast.size(); i++)
+		{
+			delete ast[i];
+			ast[i] = nullptr;
+		}
+		ast.clear();
+		tokens.clear();
+		
 	}
 
 	return 0;
