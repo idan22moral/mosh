@@ -6,12 +6,15 @@
 #include <stdlib.h>
 #include "mosh_parser.h"
 #include "mosh_ast_node.h"
+#include "mosh_debug.h"
 
 #define _STR(x) #x
 #define STR(x) _STR(x)
 
 #define ARG_MAX 2097152
 #define ARG_MAX_STR STR(ARG_MAX)
+
+extern bool debug_mode;
 
 void print_prompt();
 std::string get_input();

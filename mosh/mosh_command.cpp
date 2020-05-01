@@ -8,7 +8,6 @@ mosh_command::mosh_command(std::string command, std::vector<std::string> args)
 	: _args(), _original_command(command), _command(command)
 {
 	// add the original command to the beginning of the args
-	std::cout << "pushing original command: " << _original_command << std::endl;
 	_args.push_back(_original_command);
 
 	for (int i = 0; i < args.size(); i++)

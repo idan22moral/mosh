@@ -1,3 +1,6 @@
+#ifndef _MOSH_PARSER_H
+#define _MOSH_PARSER_H
+
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
@@ -35,19 +38,9 @@ enum class token_label {
 	//REDIRECT_LEFT,		// >
 };
 
-/*enum class mosh_operator {
-	PIPE,					// |
-	DETACH,					// &
-	AND,					// &&
-	OR,						// ||
-	//ROUND_BRACKET_OPEN,		// (
-	//ROUND_BRACKET_CLOSE,	// )
-	//REDIRECT_LEFT,			// >
-	SEMICOLON,				// ;
-	INVALID
-};*/
-
 token_label label_operator(std::string op);
 std::vector<std::string> tokenize(std::string s);
 std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::string> tokens);
 std::vector<mosh_ast_node*> build_ast_list(std::vector<std::pair<std::string, token_label>> labeled_tokens);
+
+#endif

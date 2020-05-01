@@ -1,29 +1,6 @@
 #include "mosh.h"
 
-std::string token_label_str(token_label label)
-{
-	switch (label)
-	{
-	case token_label::AND:
-		return "AND";
-	case token_label::ARGUMENT:
-		return "ARGUMENT";
-	case token_label::COMMAND:
-		return "COMMAND";
-	case token_label::DETACH:
-		return "DETACH";
-	case token_label::OR:
-		return "OR";
-	case token_label::PIPE:
-		return "PIPE";
-	case token_label::SEMICOLON:
-		return "SEMICOLON";
-	case token_label::UNDEFINED:
-		return "UNDEFINED";
-	default:
-		return "ERROR!";
-	}
-}
+bool debug_mode;
 
 void print_prompt()
 {
@@ -45,7 +22,7 @@ int execute_commands(std::vector<mosh_ast_node *> commands)
 		{
 			command->execute();
 		}
-		catch(const mosh_exception& e)
+		catch (const mosh_exception &e)
 		{
 			std::cerr << e.what() << '\n';
 		}
@@ -59,7 +36,7 @@ int mosh_interactive()
 	std::string line;
 	std::vector<std::string> tokens;
 	std::vector<std::pair<std::string, token_label>> labeled_tokens;
-	std::vector<mosh_ast_node *> ast;
+	std::vector<mosh_ast_node *> ast_list;
 
 	while (true)
 	{
@@ -68,19 +45,12 @@ int mosh_interactive()
 
 		if (std::cin.eof())
 			return 1;
-		
+
+		// Tokenize the input
 		try
 		{
-			// Convert the raw input into tokens
 			tokens = tokenize(line);
-
-			std::cout << "Tokenize:\n[ ";
-			// Loop through the recieved commands
-			for (i = 0; i < tokens.size(); i++)
-			{
-				std::cout << "\'" << tokens[i] << "\', ";
-			}
-			std::cout << " ]\n" << std::endl;
+			debug_tokens(tokens);
 		}
 		catch (const mosh_exception &e)
 		{
@@ -88,66 +58,39 @@ int mosh_interactive()
 			continue;
 		}
 
+		// Label the tokens
 		try
 		{
 			labeled_tokens = label_tokens(tokens);
-
-			std::cout << "Label:\n[ ";
-			// Loop through the recieved commands
-			for (i = 0; i < labeled_tokens.size(); i++)
-			{
-				std::cout << "(\'" << labeled_tokens[i].first << "\', " << token_label_str(labeled_tokens[i].second) << "), ";
-			}
-			std::cout << " ]\n" << std::endl;
+			debug_labeled_tokens(labeled_tokens);
 		}
-		catch(const mosh_exception &e)
-		{ 
+		catch (const mosh_exception &e)
+		{
 			std::cerr << e.what() << '\n';
 		}
-		
 
+		// Build list of ASTs from the labeled tokens
 		try
 		{
-			ast = build_ast_list(labeled_tokens);
-
-			for (i = 0; i < ast.size(); i++)
-			{
-				auto node = ast[i];
-				mosh_command *cmd = dynamic_cast<mosh_command *>(node);
-				if (cmd)
-				{
-					cmd->debug();
-				}
-				else
-				{
-					mosh_pipe *pipe = dynamic_cast<mosh_pipe *>(node);
-					if (pipe)
-					{
-						pipe->debug();
-					}
-					else
-					{
-						throw mosh_internal_error("ast node was not command/pipe.");
-					}
-				}
-			}
+			ast_list = build_ast_list(labeled_tokens);
+			debug_ast_list(ast_list);
 		}
-		catch(const mosh_exception& e)
+		catch (const mosh_exception &e)
 		{
 			std::cerr << e.what() << '\n';
 		}
-		
-		execute_commands(ast);
+
+		// Execute the whole AST commands
+		execute_commands(ast_list);
 
 		// free the memory of the AST
-		for (i = 0; i < ast.size(); i++)
+		for (i = 0; i < ast_list.size(); i++)
 		{
-			delete ast[i];
-			ast[i] = nullptr;
+			delete ast_list[i];
+			ast_list[i] = nullptr;
 		}
-		ast.clear();
+		ast_list.clear();
 		tokens.clear();
-		
 	}
 
 	return 0;
