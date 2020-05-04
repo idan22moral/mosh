@@ -1,4 +1,4 @@
-# mosh
+# Moral Shell
 A simple implementation of an interactive shell.
 
 ## Installation
