@@ -108,8 +108,7 @@ int mosh_pipe::execute()
 	close(pipe_fds[STDOUT_FILENO]);
 
 	// wait for both children to finish
-	while (wait(NULL) > 0)
-		;
+	while (wait(NULL) > 0);
 
 	return EXIT_SUCCESS;
 }
