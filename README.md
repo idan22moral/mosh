@@ -42,5 +42,3 @@ $ boop
 * Redirections to files (like the operator `>`) are not supported.
 * Parentheses and curly brackets (subshells, basically) are not supported.
 * Comments are not supported.
-* the `set` builtin is writen in the code, but does nothing in it's current state.
-* Some of those features are left commented in the code for future changes.
