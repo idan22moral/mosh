@@ -10,12 +10,6 @@ token_label label_operator(std::string op)
 		return token_label::AND;
 	if (op == "||")
 		return token_label::OR;
-	/*if (op == ">")
-		return mosh_operator::REDIRECT_LEFT;
-	if (op == "(")
-		return mosh_operator::ROUND_BRACKET_OPEN;
-	if (op == ")")
-		return mosh_operator::ROUND_BRACKET_CLOSE;*/
 	if (op == ";")
 		return token_label::SEMICOLON;
 	return token_label::UNDEFINED;
@@ -159,7 +153,7 @@ std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::s
 				break;
 
 				default:
-					mosh_internal_error("unknown operator \"" + tokens[i] + "\" while creating labeling token.");
+					mosh_internal_error("unknown operator \"" + tokens[i] + "\" while creating labeling token");
 					break;
 				}
 			}
@@ -225,7 +219,7 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 			}
 			else
 			{
-				throw mosh_internal_error("cannot add argument to a command that was not allocated.");
+				throw mosh_internal_error("cannot add argument to a command that was not allocated");
 			}
 		}
 		break;
@@ -245,19 +239,6 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 		}
 		break;
 
-			/*case token_label::FILE:
-		{
-			if (i == 0 || last_redirect_index != i - 1)
-			{
-				puts("token parsed as file");
-			}
-			if (label_operator(labeled_tokens[i - 1].first) == mosh_operator::REDIRECT_LEFT)
-			{
-				
-			}
-		}
-		break;*/
-
 		case token_label::PIPE:
 		{
 			// make sure there's something to pipe to
@@ -276,12 +257,12 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 				}
 				else
 				{
-					throw mosh_syntax_error("command was not specified before a pipe.");
+					throw mosh_syntax_error("command was not specified before a pipe");
 				}
 			}
 			else
 			{
-				throw mosh_syntax_error("command was not specified before a pipe.");
+				throw mosh_syntax_error("command was not specified before a pipe");
 			}
 		}
 		break;
@@ -299,21 +280,22 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 		}
 		break;
 
-			/*case token_label::OR:
-			break;
+		case token_label::OR:
 		case token_label::DETACH:
-			break;
 		case token_label::AND:
-			break;*/
+		{
+			throw mosh_internal_error("operator \"" + current_token.first + "\" is supported yet");
+		}
+		break;
 
 		case token_label::UNDEFINED:
 		{
-			throw mosh_internal_error("type of \"" + current_token.first + "\" is undefined.");
+			throw mosh_internal_error("type of \"" + current_token.first + "\" is undefined");
 		}
 		break;
 
 		default:
-			throw mosh_internal_error("unknown operator \"" + current_token.first + "\" while creating AST.");
+			throw mosh_internal_error("unknown operator \"" + current_token.first + "\" while creating AST");
 			break;
 		}
 	}

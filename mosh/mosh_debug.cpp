@@ -4,16 +4,10 @@ std::string token_label_str(token_label label)
 {
 	switch (label)
 	{
-	case token_label::AND:
-		return "AND";
 	case token_label::ARGUMENT:
 		return "ARGUMENT";
 	case token_label::COMMAND:
 		return "COMMAND";
-	case token_label::DETACH:
-		return "DETACH";
-	case token_label::OR:
-		return "OR";
 	case token_label::PIPE:
 		return "PIPE";
 	case token_label::SEMICOLON:
@@ -104,7 +98,7 @@ void debug_ast_list(std::vector<mosh_ast_node *> ast_list)
 			}
 			else
 			{
-				throw mosh_internal_error("ast node was not command/pipe.");
+				throw mosh_internal_error("ast node was not command/pipe");
 			}
 		}
 	}

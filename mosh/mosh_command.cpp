@@ -69,7 +69,7 @@ void mosh_command::resolve()
 
 	if (!resolved)
 	{
-		throw mosh_syntax_error("command '" + _original_command + "' does not exist.");
+		throw mosh_syntax_error("command '" + _original_command + "' does not exist");
 	}
 }
 
@@ -115,7 +115,7 @@ int mosh_command::execute()
 		// convert to proper args format
 		for (auto &arg : _args)
 		{
-			c_args.push_back((char *)arg.c_str()); // unsafe?
+			c_args.push_back((char *)arg.c_str());
 		}
 		c_args.push_back(NULL);
 
@@ -124,7 +124,7 @@ int mosh_command::execute()
 		switch (child_pid)
 		{
 		case -1:
-			throw mosh_internal_error("fork failed on command '" + _original_command + "' execution.");
+			throw mosh_internal_error("fork failed on command '" + _original_command + "' execution");
 
 		case 0: // child
 			exit(execv(_command.c_str(), c_args.data()));

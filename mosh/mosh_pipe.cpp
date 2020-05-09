@@ -49,14 +49,14 @@ int mosh_pipe::execute()
 
 	if (result)
 	{
-		throw mosh_internal_error("pipe creation failed on pipe execution (first).");
+		throw mosh_internal_error("pipe creation failed on pipe execution (first)");
 	}
 
 	// left child (reader)
 	switch (fork())
 	{
 	case -1:
-		throw mosh_internal_error("fork failed on pipe execution (second fork).");
+		throw mosh_internal_error("fork failed on pipe execution (second fork)");
 	case 0:											// child
 		close(pipe_fds[STDOUT_FILENO]);				// close useless allocated stdout
 		dup2(pipe_fds[STDIN_FILENO], STDIN_FILENO); // move pipe read to stdin
@@ -82,7 +82,7 @@ int mosh_pipe::execute()
 	switch (child_pid)
 	{
 	case -1:
-		throw mosh_internal_error("fork failed on pipe execution (first fork).");
+		throw mosh_internal_error("fork failed on pipe execution (first fork)");
 	case 0:											  // child
 		close(pipe_fds[STDIN_FILENO]);				  // close useless allocated stdin
 		dup2(pipe_fds[STDOUT_FILENO], STDOUT_FILENO); // move write to stdout

@@ -17,7 +17,7 @@ int cd(std::vector<std::string> argv)
 
 	if (size <= 0)
 	{
-		std::cerr << "invalid usage of 'cd'." << std::endl;
+		std::cerr << "invalid usage of 'cd'" << std::endl;
 		return EXIT_FAILURE;
 	}
 	else if (size == 1) // cd
@@ -66,11 +66,6 @@ int cd(std::vector<std::string> argv)
 	}
 
 	return EXIT_SUCCESS;
-}
-
-int set(std::vector<std::string> argv)
-{
-	return 0;
 }
 
 int mosh_exit(std::vector<std::string> argv)

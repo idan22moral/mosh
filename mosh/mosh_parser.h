@@ -27,17 +27,12 @@ enum class token_label
 {
 	COMMAND,
 	ARGUMENT,
-	//OPERATOR,
-	//FILE,
 	PIPE,	   // |
 	DETACH,	   // &
 	AND,	   // &&
 	OR,		   // ||
 	SEMICOLON, // ;
 	UNDEFINED
-	//ROUND_BRACKET_OPEN,	// (
-	//ROUND_BRACKET_CLOSE,	// )
-	//REDIRECT_LEFT,		// >
 };
 
 token_label label_operator(std::string op);

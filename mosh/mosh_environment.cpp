@@ -1,6 +1,6 @@
 #include "mosh_environment.h"
 
-std::map<std::string, std::function<int(std::vector<std::string>)>> BUILTINS{{"cd", cd}, {"set", set}, {"boop", mosh_exit}};
+std::map<std::string, std::function<int(std::vector<std::string>)>> BUILTINS{{"cd", cd}, {"boop", mosh_exit}};
 std::vector<std::string> PATH{
 	"/home/idan/.local/bin",
 	"/usr/local/sbin",
