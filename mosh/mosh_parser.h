@@ -15,6 +15,7 @@
 #include "mosh_ast_node.h"
 #include "mosh_pipe.h"
 #include "mosh_command.h"
+#include "mosh_debug.h"
 
 enum class parse_mode
 {
@@ -36,8 +37,9 @@ enum class token_label
 };
 
 token_label label_operator(std::string op);
-std::vector<std::string> tokenize(std::string s);
+std::vector<std::string> tokenize(std::string input);
 std::vector<std::pair<std::string, token_label>> label_tokens(std::vector<std::string> tokens);
 std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, token_label>> labeled_tokens);
+std::vector<mosh_ast_node *> parse_input(std::string user_input);
 
 #endif

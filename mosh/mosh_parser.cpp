@@ -302,3 +302,24 @@ std::vector<mosh_ast_node *> build_ast_list(std::vector<std::pair<std::string, t
 
 	return ast_list;
 }
+
+std::vector<mosh_ast_node *> parse_input(std::string user_input)
+{
+	std::vector<std::string> tokens;
+	std::vector<std::pair<std::string, token_label>> labeled_tokens;
+	std::vector<mosh_ast_node *> ast_list;
+
+	// Tokenize the input
+	tokens = tokenize(user_input);
+	debug_tokens(tokens);
+
+	// Label the tokens
+	labeled_tokens = label_tokens(tokens);
+	debug_labeled_tokens(labeled_tokens);
+
+	// Build list of ASTs from the labeled tokens
+	ast_list = build_ast_list(labeled_tokens);
+	debug_ast_list(ast_list);
+
+	return ast_list;
+}

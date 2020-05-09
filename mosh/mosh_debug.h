@@ -11,6 +11,8 @@
 #include "mosh_command.h"
 #include "mosh_pipe.h"
 
+enum class token_label;
+
 std::string token_label_str(token_label label);
 
 void debug_tokens(std::vector<std::string> tokens);
