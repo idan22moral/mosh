@@ -10,10 +10,10 @@ EXECUTABLE := mosh
 all: $(BUILD)/$(EXECUTABLE)
 
 run: clean all
-	clear
 	./$(BUILD)/$(EXECUTABLE)
 
 $(BUILD)/$(EXECUTABLE) : $(SRC)/*
+	[ ! -d $(BUILD) ] && mkdir build
 	$(CC) $(ARGS) $^ -o $@
 
 clean:
