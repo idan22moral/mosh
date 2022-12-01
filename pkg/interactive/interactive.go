@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/idan22moral/v2/internal"
+	"github.com/idan22moral/v2/pkg/parser"
 )
 
 func LoadCommandLineArgs() {
@@ -23,30 +24,19 @@ func PrintPrompt() {
 }
 
 func Loop() {
-	var inputBuffer []byte
-	reader := bufio.NewReader(os.Stdin)
+	stdin := bufio.NewReader(os.Stdin)
+
 	for {
 		PrintPrompt()
-		// fmt.Scanf("%c", currentInput)
-		os.Stdin.Read()
+
+		currentInput, err := stdin.ReadBytes('\n')
+
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 
-		if currentInput == '\t' {
-			if internal.DebugMode {
-				fmt.Println("tab entered")
-			}
-		} else if currentInput == '\n' {
-			if internal.DebugMode {
-				fmt.Println("newline entered")
-			}
-			fmt.Println("inputBuffer", inputBuffer)
-			inputBuffer = nil
-
-		} else {
-			inputBuffer = append(inputBuffer, currentInput)
-		}
+		currentInput = currentInput[:len(currentInput)-1]
+		parser.Parse(currentInput)
 	}
 }
