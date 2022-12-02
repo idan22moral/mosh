@@ -37,6 +37,9 @@ func Loop() {
 		}
 
 		currentInput = currentInput[:len(currentInput)-1]
-		parser.Parse(currentInput)
+		_, err = parser.Parse(currentInput)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
