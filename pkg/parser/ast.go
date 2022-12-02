@@ -2,8 +2,6 @@ package parser
 
 import (
 	"errors"
-
-	objects "github.com/idan22moral/v2/pkg/parser/objects"
 )
 
 type AST interface {
@@ -16,8 +14,8 @@ type AST interface {
 func BuildAST(tokens []Token) ([]AST, error) {
 	var ASTList []AST
 	var currentToken Token
-	var cmd *objects.MoshCommand
-	var pipe *objects.MoshPipe
+	var cmd *MoshCommand
+	var pipe *MoshPipe
 
 	for _, v := range tokens {
 		currentToken = v
@@ -31,7 +29,7 @@ func BuildAST(tokens []Token) ([]AST, error) {
 			}
 
 		case Command:
-			cmd = objects.NewMoshCommand(string(currentToken.Text), nil)
+			cmd = NewMoshCommand(string(currentToken.Text), nil)
 			if pipe != nil && pipe.Right == nil {
 				pipe.Right = cmd
 			} else {
@@ -42,11 +40,11 @@ func BuildAST(tokens []Token) ([]AST, error) {
 			// make sure there's something to pipe to
 			if len(ASTList) > 0 {
 				if !ASTList[len(ASTList)-1].Sealed() {
-					mc, ok := ASTList[len(ASTList)-1].(*objects.MoshCommand)
+					mc, ok := ASTList[len(ASTList)-1].(*MoshCommand)
 					if !ok {
 						return nil, errors.New("pipe child must be a *MoshCommand")
 					}
-					pipe = objects.NewMoshPipe(mc, nil)
+					pipe = NewMoshPipe(mc, nil)
 					ASTList[len(ASTList)-1] = pipe
 				} else {
 					return nil, errors.New("command was not specified before a pipe")
