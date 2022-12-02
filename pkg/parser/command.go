@@ -15,35 +15,13 @@ type MoshCommand struct {
 	Command         *exec.Cmd
 }
 
-func (c *MoshCommand) Prepare() error {
-	c.Resolve()
-
-	if c.builtin {
-		return errors.New("builtins not implemented")
-	}
-
-	c.Command = exec.Command(c.commandText, c.args...)
-
-	return nil
-}
-
 func (c *MoshCommand) Execute() (int, error) {
-	if c.Command == nil {
-		err := c.Prepare()
-
-		if err != nil {
-			return -1, err
-		}
-	}
-
-	err := c.Command.Start()
-
-	return 0, err
+	return 0, c.Command.Start()
 }
 
 func (c *MoshCommand) Wait() (int, error) {
 	if c.Command == nil {
-		return -1, errors.New("command not prepared / executed")
+		return -1, errors.New("command not executed")
 	}
 
 	err := c.Command.Wait()
@@ -89,11 +67,16 @@ func (c *MoshCommand) Resolve() {
 func NewMoshCommand(command string, args []string) *MoshCommand {
 	var _args []string
 	copy(args, _args)
-	return &MoshCommand{
+	mc := &MoshCommand{
 		commandText:     command,
 		args:            _args,
 		sealed:          false,
 		originalCommand: command,
 		builtin:         false,
+		Command:         exec.Command(command, _args...),
 	}
+
+	mc.Resolve()
+
+	return mc
 }

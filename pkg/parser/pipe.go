@@ -13,16 +13,6 @@ type MoshPipe struct {
 }
 
 func (p *MoshPipe) Execute() (int, error) {
-	err := p.Left.Prepare()
-	if err != nil {
-		return -1, err
-	}
-
-	err = p.Right.Prepare()
-	if err != nil {
-		return -1, err
-	}
-
 	/*
 		Writer's stdout (leftStdout) should be piped to reader's stdin (rightStdin).
 
