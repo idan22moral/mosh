@@ -13,14 +13,14 @@ func Label(rawTokens []TokenText) (labeledTokens []Token, err error) {
 	prevKind := Undefined
 
 	for _, token := range rawTokens {
-		currentToken = Token{text: token}
+		currentToken = Token{Text: token}
 
 		if isOperator(token) {
 			operatorKind = Operators[string(token)]
 			switch operatorKind {
 			case Pipe, Detach, And, Or, Semicolon:
 				if prevKind == Command || prevKind == Argument {
-					currentToken.kind = operatorKind
+					currentToken.Kind = operatorKind
 					prevKind = operatorKind
 				} else {
 					return nil, errors.New("invalid operator location")
@@ -32,12 +32,12 @@ func Label(rawTokens []TokenText) (labeledTokens []Token, err error) {
 		} else {
 			switch prevKind {
 			case Command, Argument:
-				currentToken.kind = Argument
+				currentToken.Kind = Argument
 				prevKind = Argument
 
 			case Pipe, Detach, And, Or, Semicolon, Undefined:
 				// must be a command
-				currentToken.kind = Command
+				currentToken.Kind = Command
 				prevKind = Command
 			}
 		}

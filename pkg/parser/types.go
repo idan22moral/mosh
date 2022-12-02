@@ -15,8 +15,8 @@ const (
 )
 
 type Token struct {
-	kind TokenKind
-	text TokenText
+	Kind TokenKind
+	Text TokenText
 }
 
 type ParseMode = int
