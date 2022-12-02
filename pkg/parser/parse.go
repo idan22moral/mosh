@@ -1,6 +1,10 @@
 package parser
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/idan22moral/v2/internal"
+)
 
 func Parse(input []byte) error {
 	rawTokens, err := Tokenize(input)
@@ -9,7 +13,9 @@ func Parse(input []byte) error {
 		return err
 	}
 
-	fmt.Printf("rawTokens: %v\n", rawTokens)
+	if internal.DebugMode {
+		fmt.Printf("rawTokens: %v\n", rawTokens)
+	}
 
 	labeledTokens, err := Label(rawTokens)
 
@@ -17,7 +23,9 @@ func Parse(input []byte) error {
 		return err
 	}
 
-	fmt.Printf("labeledTokens: %v\n", labeledTokens)
+	if internal.DebugMode {
+		fmt.Printf("labeledTokens: %v\n", labeledTokens)
+	}
 
 	return nil
 }
