@@ -4,8 +4,35 @@ import (
 	"errors"
 )
 
+type TokenText = []byte
+type TokenKind = int
+
+const (
+	Undefined TokenKind = iota
+	Command
+	Argument
+	Pipe      // |
+	Detach    // &
+	And       // &&
+	Or        // ||
+	Semicolon // ;
+)
+
+type Token struct {
+	Kind TokenKind
+	Text TokenText
+}
+
+type TokenizerMode = int
+
+const (
+	Normal     TokenizerMode = iota
+	Apostrophe               // '
+	Quotation                // "
+)
+
 func Tokenize(input []byte) (rawTokens []TokenText, err error) {
-	var mode ParseMode
+	var mode TokenizerMode
 	var currentToken []byte
 
 	saveCurrentToken := func() {

@@ -2,6 +2,14 @@ package parser
 
 import "errors"
 
+var Operators = map[string]TokenKind{
+	"|":  Pipe,
+	"&":  Detach,
+	"&&": And,
+	"||": Or,
+	";":  Semicolon,
+}
+
 func isOperator[T string | []byte | byte](op T) bool {
 	_, ok := Operators[string(op)]
 	return ok
