@@ -23,20 +23,31 @@ func PrintPrompt() {
 	fmt.Print("$ ")
 }
 
+func ReadLine(reader *bufio.Reader) (text []byte, err error) {
+	text, err = reader.ReadBytes('\n')
+
+	if err != nil {
+		return nil, err
+	}
+
+	text = text[:len(text)-1]
+
+	return text, err
+}
+
 func Loop() {
 	stdin := bufio.NewReader(os.Stdin)
 
 	for {
 		PrintPrompt()
 
-		currentInput, err := stdin.ReadBytes('\n')
+		currentInput, err := ReadLine(stdin)
 
 		if err != nil {
 			fmt.Println(err)
-			return
+			continue
 		}
 
-		currentInput = currentInput[:len(currentInput)-1]
 		_, err = parser.Parse(currentInput)
 		if err != nil {
 			fmt.Println(err)
