@@ -63,7 +63,7 @@ func BuildAST(tokens []Token) ([]AST, error) {
 			}
 
 		case Or, Detach, And:
-			return nil, errors.New("operator \"" + string(currentToken.Text) + "\" is supported yet")
+			return nil, errors.New("operator \"" + string(currentToken.Text) + "\" is not supported yet")
 
 		case Undefined:
 			return nil, errors.New("type of \"" + string(currentToken.Text) + "\" is undefined")
