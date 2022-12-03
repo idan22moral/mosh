@@ -39,12 +39,14 @@ func BuildAST(tokens []Token) ([]AST, error) {
 		case Pipe:
 			// make sure there's something to pipe to
 			if len(ASTList) > 0 {
-				if !ASTList[len(ASTList)-1].Sealed() {
-					mc, ok := ASTList[len(ASTList)-1].(*MoshCommand)
-					if !ok {
+				lastNode := ASTList[len(ASTList)-1]
+				if !lastNode.Sealed() {
+					switch lastNode := lastNode.(type) {
+					case *MoshCommand, *MoshPipe:
+						pipe = NewMoshPipe(lastNode.(PipeableAST), nil)
+					default:
 						return nil, errors.New("pipe child must be a *MoshCommand")
 					}
-					pipe = NewMoshPipe(mc, nil)
 					ASTList[len(ASTList)-1] = pipe
 				} else {
 					return nil, errors.New("command was not specified before a pipe")

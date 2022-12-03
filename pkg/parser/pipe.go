@@ -6,10 +6,18 @@ import (
 	"os"
 )
 
+type PipeableAST interface {
+	AST
+	StdinPipe() (io.WriteCloser, error)
+	StdoutPipe() (io.ReadCloser, error)
+	StderrPipe() (io.ReadCloser, error)
+	Wait() (int, error)
+}
+
 type MoshPipe struct {
 	sealed bool
-	Right  *MoshCommand
-	Left   *MoshCommand
+	Right  PipeableAST
+	Left   PipeableAST
 }
 
 func (p *MoshPipe) Execute() (int, error) {
@@ -22,21 +30,21 @@ func (p *MoshPipe) Execute() (int, error) {
 					     rightStdin
 	*/
 
-	leftStdout, err := p.Left.Command.StdoutPipe()
+	leftStdout, err := p.Left.StdoutPipe()
 	if err != nil {
 		return -1, err
 	}
-	rightStdin, err := p.Right.Command.StdinPipe()
+	rightStdin, err := p.Right.StdinPipe()
 	if err != nil {
 		return -1, err
 	}
 
 	// Redirect rightStdout and rightStderr to the parent's corresponding streams to get the output
-	rightStdout, err := p.Right.Command.StdoutPipe()
+	rightStdout, err := p.Right.StdoutPipe()
 	if err != nil {
 		return -1, err
 	}
-	rightStderr, err := p.Right.Command.StderrPipe()
+	rightStderr, err := p.Right.StderrPipe()
 	if err != nil {
 		return -1, err
 	}
@@ -48,17 +56,7 @@ func (p *MoshPipe) Execute() (int, error) {
 	io.Copy(os.Stdout, rightStdout)
 	io.Copy(os.Stderr, rightStderr)
 
-	_, err = p.Left.Wait()
-	if err != nil {
-		return -1, err
-	}
-
-	exitCodeRight, err := p.Right.Wait()
-	if err != nil {
-		return -1, err
-	}
-
-	return exitCodeRight, nil
+	return p.Wait()
 }
 
 func (p *MoshPipe) String() string {
@@ -73,7 +71,36 @@ func (p *MoshPipe) Sealed() bool {
 	return p.sealed
 }
 
-func NewMoshPipe(left *MoshCommand, right *MoshCommand) *MoshPipe {
+func (p *MoshPipe) Wait() (int, error) {
+	_, err := p.Left.Wait()
+	if err != nil {
+		return -1, err
+	}
+
+	exitCodeRight, err := p.Right.Wait()
+	if err != nil {
+		return -1, err
+	}
+
+	return exitCodeRight, nil
+}
+
+func (c *MoshPipe) StdinPipe() (io.WriteCloser, error) {
+	wc, err := c.Left.StdinPipe()
+	return wc, err
+}
+
+func (c *MoshPipe) StdoutPipe() (io.ReadCloser, error) {
+	rc, err := c.Right.StdoutPipe()
+	return rc, err
+}
+
+func (c *MoshPipe) StderrPipe() (io.ReadCloser, error) {
+	rc, err := c.Right.StderrPipe()
+	return rc, err
+}
+
+func NewMoshPipe(left PipeableAST, right PipeableAST) *MoshPipe {
 	return &MoshPipe{
 		Right:  right,
 		Left:   left,

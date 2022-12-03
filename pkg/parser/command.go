@@ -3,6 +3,7 @@ package parser
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os/exec"
 )
 
@@ -54,6 +55,21 @@ func (c *MoshCommand) OriginalCommand() string {
 
 func (c *MoshCommand) AddArgument(arg string) {
 	c.args = append(c.args, arg)
+}
+
+func (c *MoshCommand) StdinPipe() (io.WriteCloser, error) {
+	wc, err := c.Command.StdinPipe()
+	return wc, err
+}
+
+func (c *MoshCommand) StdoutPipe() (io.ReadCloser, error) {
+	rc, err := c.Command.StdoutPipe()
+	return rc, err
+}
+
+func (c *MoshCommand) StderrPipe() (io.ReadCloser, error) {
+	rc, err := c.Command.StderrPipe()
+	return rc, err
 }
 
 func (c *MoshCommand) SetCommand(command string) {
