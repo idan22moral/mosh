@@ -76,23 +76,27 @@ func (c *MoshCommand) SetCommand(command string) {
 	c.commandText = command
 }
 
-func (c *MoshCommand) Resolve() {
-	// not implemented yet
+func resolveCommand(command string) string {
+	absPath, err := exec.LookPath(command)
+	if err != nil {
+		return command
+	}
+	return absPath
 }
 
 func NewMoshCommand(command string, args []string) *MoshCommand {
 	var _args []string
+
 	copy(args, _args)
-	mc := &MoshCommand{
-		commandText:     command,
+
+	commandPath := resolveCommand(command)
+
+	return &MoshCommand{
+		commandText:     commandPath,
 		args:            _args,
 		sealed:          false,
 		originalCommand: command,
 		builtin:         false,
-		Command:         exec.Command(command, _args...),
+		Command:         exec.Command(commandPath, _args...),
 	}
-
-	mc.Resolve()
-
-	return mc
 }
